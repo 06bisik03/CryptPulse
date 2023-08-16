@@ -1,0 +1,31 @@
+Web App Project Document: CryptPulse
+
+Problem Statement: 
+Nowadays a robust, responsive and on top of all a user-friendly web application is being sought after as the days go by. Building these web applications whilst keeping it rich in features is quite challenging, but always is worth the effort.
+Our Problem is to build such a website that uses minimalistic web-traffic, provides us with all of the previously mentioned points and all whilst keeping the UI very user-friendly. Meeting the expectations while meeting the specific requirements 
+of basic user-authentication and user data management. All the mentioned points shall be covered in this project with the help of Javascript and ReactJS to provide the user with the UI and Firebase to store basic data about the user and other user related data.
+
+
+Requirements: 
+1. User Authentication: Implement a secure and seamless user authentication system that allows users to register, log in, anxd manage their transaction and coins. Every detail about the user is stored in firebase.
+2. Data Management: Implement such a file, in which there are functions that will communicate with firebase to read as well as write data. Usage of real-time database is enough for a project of this scale. Cloudfire could be used for bigger ones, for better scaling.
+3. Responsive UI: The UI consists of boxes that contain coins and transactions which make it easy for the user to interact with the application. Attractive and simplistic design is always going to be the best for modern applications.
+4. Interactive Components: Components that make it easy to navigate throughout the app make guarantee a pleasant experience with the app for the user.
+5. Error Handling: Reporting back to the user if anything happens that is unexpected as well as expected problems such as funds and many more. These provide the user with information that will make it easier to understand how the problem can be solved if it is because of the user.
+6. Realtime Data: Using the CoinGecko API, the data is able to update itself automatically. This is the feature that makes the application a real-life project rather than just a game-like project. Updating the prices of coins and user data will provide the user with high-end real-life experiences.
+
+
+Solution: 
+1. ReactJS: Making use of component based nature of ReactJS also enables us to build interactive components that can be reused multiple times. Data can also be passed down very easily to child and parent components which makes it easy for the developpers 
+to make a page with components that rely heavily on each other.
+2. React-Router: Implementing a one-page website with the use of React-router is crucial in providing a smooth UI experience, rather than using multiple pages, since it is easier to pass down data to the children and parents components.
+3. User-authentication: Leveraging the benefits of the free realtime-database as well as the Firebase-authentication makes it very easy to store the credentials of a user and store their data about investments and deposits.
+4. Data storage: Usage of realtime-database enables us to store multiple data about the user. This way the retrieval of the data and changing the data becomes very easy for the developer without the extra need of a backend language such as Node.Js.
+5. Responsive Design: Usage of Css gridbox and flexbox make the app very flexible on all display types. Usage of only % while setting widths and heights increase the flexibility of the layout which results in better user experiences. 
+6. Interactive Elements: Usage of charts and graphs such as Recharts make the application's UI very user-friendly and provide better experience. Especially when it comes to constantly changing data.
+
+
+
+
+
+

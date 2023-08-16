@@ -1,0 +1,121 @@
+.container {
+    min-width: 29%;
+    display: grid;
+    grid-template-columns: 45% 55%;
+    background-color: rgba(255, 255, 255, 0.628);
+    border-radius: 15px;
+    overflow: hidden;
+    margin: 0 2%;
+    margin-bottom: 0.5%;
+
+
+
+}
+
+.image {
+    display: grid;
+    align-items: center;
+}
+
+.image img {
+    max-width: 75%;
+    height: auto;
+    display: block;
+    padding-left: 25px;
+}
+
+.details {
+    display: grid;
+    grid-template-rows: 1fr 4fr 1fr;
+
+}
+
+.name {
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.figures {
+
+    display: grid;
+    grid-template-rows: 50% 50%;
+
+}
+
+.figure {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+
+}
+
+.actualPrices {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    width: 100%;
+}
+
+.title {
+    margin-left: 10px;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.figure {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.currentPrice,
+.buyPoint {
+
+    display: flex;
+    gap: 20px;
+    width: 100%;
+}
+
+.lastUpdate {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+
+    white-space: nowrap;
+    /* Prevent text from wrapping */
+    overflow: hidden;
+    /* Hide overflowing text */
+    text-overflow: ellipsis;
+    /* Show ellipsis (...) if text overflows */
+
+}
+
+
+
+.profitMargin {
+    font-size: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+
+}
+
+.name i {
+    margin-left: 10px;
+    font-size: 14px;
+    margin-top: 3px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.name i:hover {
+    transform: scale(1.5)
+}
+
+.profitMargin i {
+    margin-right: 20px;
+}

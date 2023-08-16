@@ -1,19 +1,26 @@
-import { useSearchParams } from "react-router-dom";
-import Login from "./Login";
-import SignUp from "./SignUp";
+
 import styles from "./UserForm.module.css";
-
+import { useContext } from "react";
+import AuthUser from "./AuthUser";
+import Navbar from "../UI/Navbar";
+import AuthContext from "../Store/user-ctx";
+import UserProfile from "./UserProfile";
+import LoginPage from "./LoginPage";
 const UserForm = () => {
-  const [searchParams] = useSearchParams();
-  const isLogin =
-    searchParams.get("mode") === "signin"
-      ? true
-      : searchParams.get("mode") === null
-      ? true
-      : false;
-
+  const authctx = useContext(AuthContext);
   return (
-    <div className={styles.container}>{isLogin ? <Login /> : <SignUp />}</div>
+    <div className={styles.container}>
+      <AuthUser />
+
+      {authctx.isLoggedIn ? (
+        <UserProfile />
+      ) : (
+        <>
+          <Navbar /> <LoginPage />
+        </>
+      )}
+    </div>
   );
 };
 export default UserForm;
+//this component is responsible for showcasing the profile if signed in and the signin pannel if otherwise

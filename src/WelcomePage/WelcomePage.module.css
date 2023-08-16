@@ -1,12 +1,30 @@
 @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:ital@1&display=swap');
+body {
+    font-family: 'Chakra Petch', sans-serif;
 
+    ::-webkit-scrollbar {
+            width: 3px;
+    
+            /* Adjust the width of the scrollbar if needed */
+            background-color: transparent;
+            /* Set the background color to transparent */
+        }
+    
+        /* Optionally, you can style the scrollbar thumb (the draggable part) */
+        ::-webkit-scrollbar-thumb {
+            background-color: #a9a9a9;
+            /* Set the color of the thumb */
+            border-radius: 4px;
+            /* Add rounded corners to the thumb */
+        }
+    }
 .container {
     width: 100%;
     height: 100%;
     display: grid;
     grid-template-rows: 10% 90%;
     min-height: 100vh;
-    background-image: url('/public/images/5039684.jpg');
+    background-image: url('/public/images/3d-background-with-flowing-dots.jpg');
     background-size: cover;
     background-repeat: no-repeat;
     font-family: 'Chakra Petch', sans-serif;
@@ -18,6 +36,7 @@
     min-height: 100%;
     width: 100%;
     display: grid;
+    grid-template-rows: 85% 15%;
 
 
 
@@ -39,59 +58,6 @@
 
 }
 
-
-
-.link {
-
-    width: 10%;
-    height: 20px;
-    --glow-color: rgb(253, 97, 206);
-    --glow-spread-color: rgba(212, 44, 84, 0.781);
-    --enhanced-glow-color: rgb(255, 255, 255);
-    --btn-color: rgba(166, 0, 207, 0.695);
-    border: .25em solid var(--glow-color);
-    padding: 1em 3em;
-    color: var(--glow-color);
-    font-size: 15px;
-    font-weight: bold;
-    background-color: var(--btn-color);
-    border-radius: 1em;
-    outline: none;
-    box-shadow: 0 0 1em .25em var(--glow-color),
-        0 0 4em 1em var(--glow-spread-color),
-        inset 0 0 .75em .25em var(--glow-color);
-    text-shadow: 0 0 .5em var(--glow-color);
-    position: relative;
-    transition: all 0.3s;
-}
-
-.link::after {
-    pointer-events: none;
-    content: "";
-    position: absolute;
-    top: 120%;
-    left: 0;
-    height: 100%;
-    width: 100%;
-    background-color: var(--glow-spread-color);
-    filter: blur(2em);
-    opacity: .7;
-    transform: perspective(1.5em) rotateX(35deg) scale(1, .6);
-}
-
-.link:hover {
-    color: var(--btn-color);
-    background-color: var(--glow-color);
-    box-shadow: 0 0 1em .25em var(--glow-color),
-        0 0 4em 2em var(--glow-spread-color),
-        inset 0 0 .75em .25em var(--glow-color);
-}
-
-.link:active {
-    box-shadow: 0 0 0.6em .25em var(--glow-color),
-        0 0 2.5em 2em var(--glow-spread-color),
-        inset 0 0 .5em .25em var(--glow-color);
-}
 
 .card {
     width: fit-content;
@@ -169,5 +135,182 @@
     100% {
         transform: translateY(0);
         opacity: 1;
+    }
+}
+.cardHolder {
+
+    align-self: flex-end;
+    margin-left: 35px;
+    margin-bottom: 25px;
+}
+
+/* styles.module.css */
+
+.button {
+    position: relative;
+    width: 11em;
+    text-decoration: none;
+    height: 4em;
+    outline: none;
+    transition: 0.1s;
+    background-color: transparent;
+    border: none;
+    font-size: 13px;
+    font-weight: bold;
+    color: #ddebf0;
+    display: flex;
+    align-items: center;
+    /* Added to vertically align content */
+    justify-content: center;
+    /* Added to horizontally align content */
+}
+
+.clip {
+    --color: #d8bbff;
+    position: absolute;
+    top: 0;
+    left: 0;
+    /* Added to ensure alignment */
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    border: 5px double var(--color);
+    box-shadow: inset 0px 0px 15px #195480;
+    clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+}
+
+.arrow {
+    position: absolute;
+    transition: 0.2s;
+    background-color: #d8bbff;
+    top: 35%;
+    width: 11%;
+    height: 30%;
+}
+
+.leftArrow {
+    left: -13.5%;
+    clip-path: polygon(100% 0, 100% 100%, 0 50%);
+}
+
+.rightArrow {
+    clip-path: polygon(100% 49%, 0 0, 0 100%);
+    left: 102%;
+}
+
+.button:hover .rightArrow {
+    background-color: #ff0080;
+    left: -15%;
+    animation: 0.6s ease-in-out both infinite alternate rightArrow8;
+}
+
+.button:hover .leftArrow {
+    background-color: #ff0080;
+    left: 103%;
+    animation: 0.6s ease-in-out both infinite alternate leftArrow8;
+}
+
+.corner {
+    position: absolute;
+    width: 4em;
+    height: 4em;
+    background-color: #d8bbff;
+    box-shadow: inset 1px 1px 8px #2781c3;
+    transform: scale(1) rotate(45deg);
+    transition: 0.2s;
+}
+
+.rightTop {
+    top: -1.98em;
+    left: 91%;
+}
+
+.leftTop {
+    top: -1.96em;
+    left: -3.0em;
+}
+
+.leftBottom {
+    top: 2.10em;
+    left: -2.15em;
+}
+
+.rightBottom {
+    top: 45%;
+    left: 88%;
+}
+
+.button:hover .leftTop {
+    animation: 0.1s ease-in-out 0.05s both changeColor8, 0.2s linear 0.4s both lightEffect8;
+}
+
+.button:hover .rightTop {
+    animation: 0.1s ease-in-out 0.15s both changeColor8, 0.2s linear 0.4s both lightEffect8;
+}
+
+.button:hover .rightBottom {
+    animation: 0.1s ease-in-out 0.25s both changeColor8, 0.2s linear 0.4s both lightEffect8;
+}
+
+.button:hover .leftBottom {
+    animation: 0.1s ease-in-out 0.35s both changeColor8, 0.2s linear 0.4s both lightEffect8;
+}
+
+.button:hover .corner {
+    transform: scale(1.25) rotate(45deg);
+}
+
+.button:hover .clip {
+    animation: 0.2s ease-in-out 0.55s both greenLight8;
+    --color: #ff0080;
+}
+
+/* Rest of the keyframes animations remain the same */
+
+@keyframes changeColor8 {
+    from {
+        background-color: #2781c3;
+    }
+
+    to {
+        background-color: #ff0080;
+    }
+}
+
+@keyframes lightEffect8 {
+    from {
+        box-shadow: 1px 1px 5px #ff0080;
+    }
+
+    to {
+        box-shadow: 0 0 2px #ff0080;
+    }
+}
+
+@keyframes greenLight8 {
+    from {}
+
+    to {
+        box-shadow: inset 0px 0px 32px #ff0080;
+    }
+}
+
+@keyframes leftArrow8 {
+    from {
+        transform: translate(0px);
+    }
+
+    to {
+        transform: translateX(10px);
+    }
+}
+
+@keyframes rightArrow8 {
+    from {
+        transform: translate(0px);
+    }
+
+    to {
+        transform: translateX(-10px);
     }
 }

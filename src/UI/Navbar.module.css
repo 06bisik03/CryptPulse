@@ -12,7 +12,9 @@
 
 .logo {
     justify-self: flex-start;
-    margin-left: 35px;
+    max-width: 200px;
+    margin-left: 25px;
+
 }
 
 .nav {
@@ -29,7 +31,7 @@
     border: none;
     text-decoration: none;
     color: #ffffff;
-    font-family: Arial, sans-serif;
+
     font-size: 16px;
     text-transform: uppercase;
     cursor: pointer;
