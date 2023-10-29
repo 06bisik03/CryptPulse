@@ -10,10 +10,10 @@ import Exchange from "./Exchange/Exchange";
 import TradeCoin from "./Exchange/TradeCoin";
 import ShowRoom from "./Exchange/ShowRoom";
 import LoadingScreen from "./LoadingScreen";
-import useNavigatorOnLine from "./hooks/useNavigatorOnline";
+
 import Wallet from "./Wallet/Wallet";
 import Error404 from "./UI/ErrorPage/Error404";
-import SaleError from "./UI/UserSpec/SaleError";
+
 
 function App() {
   const routes = createBrowserRouter([

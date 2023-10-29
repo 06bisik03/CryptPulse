@@ -6,14 +6,14 @@ import {  useNavigate } from "react-router";
 const Contact = () => {
   const navigate = useNavigate();
   const [logged, setLogged] = useState(null);
-
+  const localSt = localStorage.getItem("isLoggedIn");
   useEffect(() => {
     if (localStorage.getItem("isLoggedIn") !== null) {
       setLogged(<ContactPage />);
     } else {
       return navigate("/profile");
     }
-  }, [localStorage]);
+  }, [localSt,navigate]);
   return logged;
 };
 export default Contact;

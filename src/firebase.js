@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getAnalytics } from "firebase/analytics";
+
 import {
   getDatabase,
   set,
@@ -217,11 +217,9 @@ export const getTransactionArray = async (userLogged) => {
     if (transactionsSnapshot.exists()) {
       // Convert the transactions object into an array and return it
       const transactionsArray = Object.values(transactionsSnapshot.val());
-      console.log(transactionsArray);
       return transactionsArray;
     } else {
       // Return an empty array if no transactions are found
-      console.log("No transactions found for the user.");
       return [];
     }
   } catch (error) {

@@ -1,4 +1,4 @@
-import { createSlice, configureStore } from "@reduxjs/toolkit";
+import { configureStore } from "@reduxjs/toolkit";
 import coinsReducer from "./Coins";
 import transactionsReducer from "./Transactions";
 import apiReducer from './Api'

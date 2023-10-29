@@ -1,17 +1,14 @@
 import { onAuthStateChanged } from "firebase/auth";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { auth, readUserData } from "../firebase";
 
 const AuthUser = (props) => {
-  const [authUser, setAuthUser] = useState(null);
-
   useEffect(() => {
     const listen = onAuthStateChanged(auth, (user) => {
       if (user) {
-        setAuthUser(user);
         readUserData(user.uid);
       } else {
-        setAuthUser(null);
+        console.log('nouser')
       }
     });
 

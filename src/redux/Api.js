@@ -17,7 +17,7 @@ export const fetcherGeneral = createAsyncThunk("generalCoin", async () => {
     // Store fetched data in the cache and local storage
     cachedGeneralCoins = data;
     localStorage.setItem("generalCoinsLastCall", JSON.stringify(data));
-
+    console.log(cachedGeneralCoins, data);
     return data;
   } catch (error) {
     // If fetching fails, try to use cached data from local storage
@@ -26,6 +26,7 @@ export const fetcherGeneral = createAsyncThunk("generalCoin", async () => {
       cachedGeneralCoins = JSON.parse(cachedData);
       return cachedGeneralCoins;
     }
+    console.log(error);
     return [];
   }
 });
@@ -87,32 +88,35 @@ const apiSlice = createSlice({
     trendingCoins: [],
     graphData: [],
   },
-  reducers: {
-
-  },
+  reducers: {},
   extraReducers(builder) {
     builder
       .addCase(fetcherGeneral.fulfilled, (state, action) => {
+        console.log("xxx");
         // Update state with fetched general coin data on success
         state.generalCoins = action.payload;
       })
       .addCase(fetcherGeneral.rejected, (state, action) => {
+        console.log("xxx");
         // Update state with cached or empty data on failure
         state.generalCoins = action.payload;
       })
       .addCase(fetcherTrending.fulfilled, (state, action) => {
+        console.log("xxx");
         // Update state with fetched trending coin data on success
         state.trendingCoins = action.payload;
       })
       .addCase(fetcherTrending.rejected, (state, action) => {
+        console.log("xxx");
         state.trendingCoins = action.payload;
-        console.log("failedThunkTrending");
       })
       .addCase(fetcherGlobal.fulfilled, (state, action) => {
+        console.log("xxx");
         // Update state with fetched global data on success
         state.globalData = action.payload;
       })
       .addCase(fetcherGlobal.rejected, (state, action) => {
+        console.log("xxx");
         state.globalData = action.payload;
       });
   },

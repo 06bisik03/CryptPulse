@@ -48,7 +48,7 @@ const TableCoin = (props) => {
     <div className={styles.container}>
       <div>{props.coin.market_cap_rank}</div>
       <div className={styles.nameCoin}>
-        <img src={image} />
+        <img src={image} alt="x"/>
         <div className={styles.name}>
           <div>{props.coin.name}</div>
           <div>{symbol}</div>

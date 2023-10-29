@@ -1,4 +1,4 @@
-import { createSlice, configureStore } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 import { getTransactionArray } from "../firebase";
 const userLogged = localStorage.getItem("userLogged");
 const transactionsArray = await getTransactionArray(userLogged);

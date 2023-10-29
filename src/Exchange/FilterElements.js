@@ -1,6 +1,6 @@
 import ElementFilter from "../UI/Exchange/ElementFilter";
 import styles from "./FilterElements.module.css";
-import { useRouteLoaderData } from "react-router";
+
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 const FilterElements = (props) => {
@@ -52,17 +52,15 @@ const FilterElements = (props) => {
     if (trendingCoins) {
       filterTheArray();
     }
-  }, [props.filter, trendingCoins]);
+  }, [props.filter, trendingCoins,generalCoins,trendingCoinArray]);
 
   return (
     <div className={styles.container}>
       <div className={styles.elements}>
         {filteredCoins.map((item) => {
-          if (item) {
-            return <ElementFilter coin={item} key={item.market_cap_rank} />;
-          } else {
-            return;
-          }
+          
+            return item && <ElementFilter coin={item} key={item.market_cap_rank} />;
+          
         })}
       </div>
     </div>

@@ -45,7 +45,7 @@ const Wallet = () => {
         setUserFinanceDetails(userData);
       }
     );
-  }, []);
+  }, [navigate]);
   //subscribe to the changes that will take place in userFinanceDetails: 
   useEffect(() => {
     const userLoggedATM= localStorage.getItem('userLogged');

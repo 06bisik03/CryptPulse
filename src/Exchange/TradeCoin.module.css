@@ -4,7 +4,7 @@
     min-height: 100vh;
     display: grid;
     grid-template-rows: 10% 90%;
-    background: rgb(20, 18, 66);
+    background: radial-gradient(circle at 52.1% -29.6%, rgb(144, 17, 105) 0%, rgb(51, 0, 131) 100.2%);
     background-position: center;
     background-size: cover;
     
@@ -14,12 +14,13 @@
 
 
 .coinDetails {
-    width: auto;
+    width: 95%;
+    justify-self: center;
     height: 100%;
     display: grid;
     grid-template-columns: 70% 30%;
     gap: 25px;
-    margin: 0 3%;
+
 }
 
 .converter {

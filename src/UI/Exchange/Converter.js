@@ -1,6 +1,6 @@
 import styles from "./Converter.module.css";
-import { useEffect } from "react";
-import { useState, useRef } from "react";
+
+import { useState} from "react";
 import Confirmation from "./Confirmation";
 import { NumberFormatter3 } from "../../Store/NumberFormatters";
 import LoadingScreen from "../../LoadingScreen";
@@ -29,7 +29,6 @@ const Converter = (props) => {
   
   //the form is only valid if none of the fields is empty
   const checkValidity = () => {
-    let validity;
     if (!usdField || !cryptoField) {
       setFormInvalid(true);
       setShowConfirmation(false);

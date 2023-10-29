@@ -1,5 +1,4 @@
-import { useSelector } from "react-redux";
-import { getCoinsArrayFromFirebase } from "../firebase";
+
 const useCoinFormula = (Coin, currentCoin) => {
   console.log(Coin, currentCoin);
   const currentPrice = currentCoin[0].current_price;

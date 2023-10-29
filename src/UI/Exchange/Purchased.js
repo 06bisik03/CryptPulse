@@ -9,7 +9,7 @@ const Purchased = (props) => {
     if (props.sell) {
       setSell(true);
     }
-  }, []);
+  }, [props.sell]);
   
   return (
     <div className={styles.test}>

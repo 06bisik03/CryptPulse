@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import useInterval from "./useInterval";
+
 import { fetcherGeneral,fetcherGlobal,fetcherTrending } from "../redux/Api";
 
 const FetchDataInterval = () => {

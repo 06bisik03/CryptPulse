@@ -2,10 +2,9 @@ import styles from "./SellConfirmation.module.css";
 import btnStyles from "../../UI/Exchange/Purchased.module.css";
 import { useState } from "react";
 import { sellCoin, updateMoney } from "../../firebase";
-import Purchased from "../Exchange/Purchased";
+
 const SellConfirmation = (props) => {
   const [sellAmount, setSellAmount] = useState("");
-  const [sellSuccess, setSellSuccess] = useState(null);
   const [gottenAmount, setGottenAmount] = useState("");
 
   const cryptoGiven = (e) => {
@@ -41,7 +40,7 @@ const SellConfirmation = (props) => {
         );
 
         if (updated) {
-          setSellSuccess(true);
+
           props.successFullSale(parseFloat(sellAmount), gottenAmount);
         } else {
           props.errorSale();
@@ -57,7 +56,7 @@ const SellConfirmation = (props) => {
     <div className={styles.backdrop}>
       <form className={styles.form} onSubmit={submitHandler}>
         <div className={styles.img}>
-          <img src={props.dataGeneral.coinImage} />
+          <img src={props.dataGeneral.coinImage} alt="x"/>
         </div>
         <div className={styles.figures}>
           <div>

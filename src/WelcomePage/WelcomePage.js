@@ -4,9 +4,7 @@ import Navbar from "../UI/Navbar";
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import "@fortawesome/fontawesome-free/css/all.min.css"; // Import Font Awesome CSS
-import { useDispatch } from "react-redux";
-import { fetcherGeneral, fetcherGlobal, fetcherTrending } from "../redux/Api";
-import { useContext } from "react";
+
 
 const WelcomePage = () => {
   const [direction, setDirection] = useState("");
@@ -44,6 +42,7 @@ const WelcomePage = () => {
         <div className={styles.cardHolder}>
           <div className={styles.card}>
             <a
+            rel="noreferrer"
               href="https://www.instagram.com/cryptpulse/"
               target="_blank"
               className={`${styles.socialContainer} ${styles.containerOne}`}>
@@ -51,19 +50,20 @@ const WelcomePage = () => {
             </a>
 
             <a
-              href="#"
+            rel="noreferrer"
+              href="https://www.instagram.com/cryptpulse/"
               className={`${styles.socialContainer} ${styles.containerTwo}`}>
               <i className="fab fa-twitter"></i>
             </a>
 
             <a
-              href="#"
+              href="https://www.instagram.com/cryptpulse/"
               className={`${styles.socialContainer} ${styles.containerThree}`}>
               <i className="fab fa-linkedin"></i>
             </a>
 
             <a
-              href="#"
+              href="https://www.instagram.com/cryptpulse/"
               className={`${styles.socialContainer} ${styles.containerFour}`}>
               <i className="fa-brands fa-whatsapp"></i>
             </a>

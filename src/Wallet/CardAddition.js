@@ -13,7 +13,7 @@ const optionsArray = [
 const CardAddition = (props) => {
   const [cardNum, setCardNum] = useState("");
   const [monthValid, setMonthValid] = useState(true);
-  const [typeCard,setTypeCard] = useState('')
+
   const [yearValid, setYearValid] = useState(true);
   const [imgSource, setImgSource] = useState("/images/card.png");
   const [selectedOptionIndex, setSelectedOptionIndex] = useState(-1);
@@ -94,7 +94,7 @@ const CardAddition = (props) => {
       <div className={styles.addCard}>
         <div className={styles.title}>Add New Credit/Debit Card</div>
         <div className={styles.imgContainer}>
-          <img src={imgSource} />
+          <img src={imgSource} alt="x"/>
         </div>
 
         <form className={styles.data} id="cardForm" onSubmit={submitHandler}>

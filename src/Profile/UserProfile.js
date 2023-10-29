@@ -26,6 +26,7 @@ const UserProfile = () => {
     totalFlow: 0,
   });
   const dispatch = useDispatch();
+  const userLog = localStorage.getItem('userLogged');
   useEffect(() => {
     const userLoggedATM = localStorage.getItem("userLogged");
     //32-40: The listener are going to call these functions when the data changes. They change the states of the variables we declared at the beginning.
@@ -42,11 +43,11 @@ const UserProfile = () => {
     setupCoinsListener(userLoggedATM, handleCoinsChange);
     setupTransactionsListener(userLoggedATM, handleTransactionsChange);
     setupAccountFlowListener(userLoggedATM, handleAccountFlowChange);
-  }, [localStorage.getItem('userLogged')]);
+  }, [userLog]);
   //dispatch fetch action in another hook to prevent calling it when the other data changes
   useEffect(() => {
     dispatch(fetcherGeneral());
-  }, []);
+  }, [dispatch]);
   //50-62: if the coins are fetched and received, filter them from the general Coins that is directly from the api, to have more information about the coin. Otherwise do not show the page.
   useEffect(() => {
     if (generalCoins.length > 0 && coins.length > 0) {

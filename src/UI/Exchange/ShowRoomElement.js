@@ -8,7 +8,7 @@ const ShowRoomElement = (props) => {
         className={styles.details}>
         <div>#{props.coin.market_cap_rank}</div>
         <div className={styles.nameImg}>
-          <img src={props.coin.image} />
+          <img alt="x"src={props.coin.image} />
           <div>{props.coin.name}</div>
         </div>
         <div className={styles.price}>

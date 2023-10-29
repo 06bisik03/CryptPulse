@@ -1,4 +1,4 @@
-import Coin from "../UI/UserSpec/Coin";
+
 import CoinTable from "./CoinTable";
 import styles from "./CurrentCoins.module.css";
 const CurrentCoins = () => {

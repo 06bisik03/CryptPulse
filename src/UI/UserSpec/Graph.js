@@ -1,7 +1,7 @@
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
-import { useEffect } from "react";
+
 import { Doughnut } from "react-chartjs-2";
-import { readUserData, setupAccountFlowListener } from "../../firebase";
+
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const Graph = (props) => {

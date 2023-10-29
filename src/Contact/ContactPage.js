@@ -19,7 +19,7 @@ const ContactPage = () => {
           <Navbar />
           <div className={styles.form}>
             <div className={styles.logo}>
-              <img src="/images/finallogo.png" />
+              <img alt="x"src="/images/finallogo.png" />
             </div>
             <div className={styles.exp}>
               Please select the reason of contact.

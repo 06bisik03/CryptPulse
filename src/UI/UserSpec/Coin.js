@@ -28,7 +28,8 @@ const Coin = (props) => {
     setSaleInfo({ sellAmount, coinName: props.coin.coinName,gottenAmount  });
   };
   //31-40: Finding out how many decimal points a price has, to be able to manipulate how it shows up in the card
-  const [_, decimalsCurPrice] = coinData.currentPrice.toString().split(".");
+  const [pr, decimalsCurPrice] = coinData.currentPrice.toString().split(".");
+  console.log(pr);
   const decimalCountCurPrice = decimalsCurPrice ? decimalsCurPrice.length : 0;
   const curPriceFormatted =
     decimalCountCurPrice > 5
@@ -56,7 +57,7 @@ const Coin = (props) => {
         {saleError && <SaleError onCancel={() => setSaleError(null)} />}
 
         <div className={styles.image}>
-          <img src={coinData.coinImage} />
+          <img src={coinData.coinImage} alt="x" />
         </div>
         <div className={styles.details}>
           <div className={styles.name}>
@@ -78,7 +79,7 @@ const Coin = (props) => {
             </div>
             <div className={styles.profitMargin}>
               {coinData.differenceOldVSNew + "%"}
-              {coinData.differenceOldVSNew == 0 ? (
+              {coinData.differenceOldVSNew === 0 ? (
                 <i
                   class="fa-solid fa-equals fa-beat"
                   style={{ color: "#005eff" }}></i>

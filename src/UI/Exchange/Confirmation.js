@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import { buyCoin } from "../../firebase";
 
 import styles from "./Confirmation.module.css";
@@ -7,11 +7,11 @@ import InsufficientFunds from "./InsufficientFunds";
 
 const Confirmation = (props) => {
   const [purchaseSuccessful, setPurchaseSuccessful] = useState(false);
-  const [funds, setFunds] = useState(null);
+
   const [showInsufficientFunds, setShowInsufficientFunds] = useState(false);
 
   const handleCoinPurchase = async () => {
-    console.log(props.data.formData.price);
+
     const time = new Date();
     const currentTime = time.getTime();
     //create a variable for purchase transaction
@@ -31,7 +31,6 @@ const Confirmation = (props) => {
     const funds = await buyCoin(transactionDetails);
     //if funds will be true, then user has enough money = transaction successful
     if (funds) {
-      setFunds(funds);
       setPurchaseSuccessful(true);
     } else {
       setShowInsufficientFunds(true);

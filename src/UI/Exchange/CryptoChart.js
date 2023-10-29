@@ -36,7 +36,7 @@ const CryptoChart = ({ data, displacement, size }) => {
       polyline.setAttribute("stroke-width", "8");
       svg.appendChild(polyline);
     }
-  }, [data]);
+  }, [data,displacement,size.heightS,size.widthS]);
 
   const widthT = size.widthT;
   const heightT = size.heightT;

@@ -15,7 +15,7 @@ const ElementFilter = (props) => {
   return (
     <div className={styles.container}>
       <div className={styles.imgGraph}>
-        <img src={image} />
+        <img src={image} alt="x"/>
         <div className={styles.graph}>
           <CryptoChart
             data={graphData}

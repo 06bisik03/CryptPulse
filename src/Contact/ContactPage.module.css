@@ -6,7 +6,7 @@
     min-height: 100vh;
     height: 100%;
     width: 100%;
-    background: rgb(20, 18, 66);
+background: radial-gradient(circle at 52.1% -29.6%, rgb(144, 17, 105) 0%, rgb(51, 0, 131) 100.2%);
     background-size: cover;
     color: white;
     font-family: 'Chakra Petch', sans-serif;
@@ -15,8 +15,7 @@
 }
 
 .form {
-    width: 50%;
-
+    width: 80%;
     height: 50%;
     display: grid;
     justify-self: center;

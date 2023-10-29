@@ -1,9 +1,8 @@
 import TableCoin from "../UI/Exchange/TableCoin";
 import styles from "./CoinTable.module.css";
-import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { coinsActions } from "../redux/Coins";
-import { useRouteLoaderData } from "react-router";
+
+import {  useSelector } from "react-redux";
+
 
 const CoinTable = () => {
   const generalCoins = useSelector((state) => state.api.generalCoins);
@@ -24,17 +23,20 @@ const CoinTable = () => {
           -24h Price/USD
         </div>
         <div>
-          Market Cap/USD
+          Market Cap
         </div>
         <div>Last Update</div>
 
         <div>Data Cluster(7d)</div>
       </div>
+      <div className={styles.coinListContainer}>
       <div className={styles.coinList}>
         {generalCoins.map((item) => {
           return <TableCoin coin={item} key={item.market_cap_rank} />;
         })}
       </div>
+      </div>
+      
     </div>
   );
 };

@@ -6,7 +6,7 @@ import { readUserData } from "../firebase";
 
 const Navbar = (props) => {
   const [prof, setProf] = useState("Profile");
-
+  const userLog = localStorage.getItem("userLogged");
   const authctx = useContext(AuthContext);
   //if the user is signed in, set the name that will appear on the navbar to the users full name from firebase. If not, set it to 'Profile'.
   useEffect(() => {
@@ -17,12 +17,12 @@ const Navbar = (props) => {
     } else {
       setProf("Profile");
     }
-  }, [localStorage.getItem("userLogged")]);
+  }, [userLog]);
 
   return (
     <div className={styles.container}>
       <Link to="/">
-        <img className={styles.logo} src="/images/finallogo.png" />
+        <img alt="x"className={styles.logo} src="/images/finallogo.png" />
       </Link>
 
       <div className={styles.nav}>

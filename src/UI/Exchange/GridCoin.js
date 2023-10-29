@@ -22,7 +22,7 @@ const GridCoin = (props) => {
   const coinId = params.coinID.split("+")[0].split("=")[1];
   useEffect(() => {
     store.fetchData(coinId);
-  }, []);
+  }, [coinId,store]);
   if (!props.coin[0]) {
     return <LoadingScreen />;
   } else {
@@ -34,8 +34,8 @@ const GridCoin = (props) => {
     const wantedPercentage = parseFloat(percentageChange).toFixed(3);
     if (props.coin[0].current_price < 0.001) {
       const digits = countZerosAfterDecimal(props.coin[0].current_price);
-      const lowerLimit = parseFloat("0" + "." + "0".repeat(digits + 1));
-      const upperLimit = parseFloat("0" + "." + "0".repeat(digits - 2) + "1");
+      const lowerLimit = parseFloat("0." + "0".repeat(digits + 1));
+      const upperLimit = parseFloat("0." + "0".repeat(digits - 2) + "1");
 
       ydomain = [lowerLimit, upperLimit];
     } else {
@@ -82,13 +82,13 @@ const GridCoin = (props) => {
                 </div>
               </div>
               <div className={styles.coinImage}>
-                <img src={props.coin[0].image} />
+                <img alt="x"src={props.coin[0].image} />
               </div>
             </div>
             <div className={styles.graph}>
               <LineChart
-                width={950}
-                height={480}
+                width={850}
+                height={400}
                 data={store.graphData}
                 margin={{
                   top: 25,
@@ -139,7 +139,7 @@ const GridCoin = (props) => {
               <div>${marketCapFormatted}</div>
             </div>
             <div className={styles.infoCont}>
-              <div>Market Cap Change(24h)</div>
+              <div>Market Change(24h)</div>
               <div>{marketCapChange}%</div>
             </div>
             <div className={styles.infoCont}>

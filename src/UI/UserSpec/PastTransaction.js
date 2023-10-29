@@ -25,7 +25,7 @@ const PastTransaction = (props) => {
       setDate(`${day} ${month} ${year}`);
       setType("Sale");
     }
-  }, []);
+  }, [props.transaction.timeOfBuy, props.transaction.timeOfSell]);
 
   const symbol = props.transaction.coinSymbol.toUpperCase();
   const price = parseFloat(props.transaction.totalSum).toFixed(2);
@@ -35,7 +35,7 @@ const PastTransaction = (props) => {
     <div className={styles.container}>
       <div className={styles.date}>{date}</div>
       <div>
-        <img src={props.transaction.coinImage} />
+        <img alt="x" src={props.transaction.coinImage} />
       </div>
 
       <div className={styles.coinType}>
