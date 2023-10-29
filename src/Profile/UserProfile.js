@@ -75,7 +75,6 @@ const UserProfile = () => {
   if (loading) {
     return <LoadingScreen />;
   } else {
-    console.log(filteredGeneralCoins);
     return (
       <div className={styles.container}>
         <Navbar />
