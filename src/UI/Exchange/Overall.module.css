@@ -1,0 +1,30 @@
+.container {
+    width: 100%;
+    max-height: 100%;
+    background-color: rgba(255, 255, 255, 0.725);
+    color: black;
+    display: flex;
+
+}
+
+.overall {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-rows: repeat(4,1fr);
+    justify-content: center;
+text-align: center;
+
+
+}
+.overall div:nth-child(1) {
+    font-size: 30px;
+    padding-top: 10px;
+    padding-bottom: 15px;
+    font-weight: 800;
+}
+.overall div:nth-child(n+2):nth-child(-n+4) {
+    font-size: 20px;
+
+
+}

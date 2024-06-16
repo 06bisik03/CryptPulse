@@ -1,0 +1,297 @@
+.container {
+    width: 100%;
+    height: 100%;
+    min-height: 100vh;
+    display: grid;
+
+    background: radial-gradient(circle at 52.1% -29.6%, rgb(144, 17, 105) 0%, rgb(51, 0, 131) 100.2%);
+    background-size: cover;
+    grid-template-rows: 10% 90%;
+    font-family: 'Chakra Petch', sans-serif;
+}
+
+.formContainer {
+    height: 60%;
+    width: 50%;
+    display: grid;
+    grid-template-rows: 50% 50%;
+    justify-self: center;
+    color: white;
+    gap: 15%;
+}
+
+
+
+.recommendation {
+    justify-self: center;
+    font-size: 17px;
+    color: white;
+}
+
+.faq {
+    color: red
+}
+
+.formContainer h1 {
+    padding-top: 20%;
+    justify-self: center;
+    align-self: center;
+    font-size: 50px;
+}
+
+.form {
+
+    display: grid;
+    grid-template-rows: 25% 75%;
+
+    display: grid;
+    gap: 10%
+}
+
+.form input,
+.form textarea {
+    border-radius: 1rem;
+    background-color: #4158D0;
+    background-image: linear-gradient(43deg, #41eddc 0%, #C850C0 46%, #f8674d 100%);
+    box-shadow: rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset, rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset, rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px, rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px, rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px;
+
+    border: none;
+
+    color: white;
+
+}
+
+.form input {
+    padding-left: 10px;
+}
+
+.form textarea {
+    padding-left: 10px;
+    padding-top: 10px;
+}
+
+.form input::placeholder,
+.form textarea::placeholder {
+    color: white;
+    font-size: 15px;
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 800;
+
+}
+
+.form input:focus,
+.form textarea:focus {
+    outline: none;
+}
+
+.form input:focus::placeholder,
+.form textarea:focus::placeholder {
+    color: transparent
+}
+
+.dropdownBtn {
+    border-radius: 1rem;
+    background-color: #4158D0;
+    background-image: linear-gradient(43deg, #41eddc 0%, #C850C0 46%, #f8674d 100%);
+    box-shadow: rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset, rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset, rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px, rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px, rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px;
+    font-size: 18px;
+    width: 100%;
+    border: none;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.7em 0.5em;
+    border-radius: 0.5em;
+    cursor: pointer;
+    font-family: 'Chakra Petch', sans-serif;
+
+
+
+
+
+
+}
+
+.arrow {
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid #fff;
+    transition: transform ease-in-out 0.3s;
+
+}
+
+.dropdownContent {
+    list-style: none;
+    padding-left: 0;
+
+    top: 3.2em;
+    width: 100%;
+    visibility: hidden;
+    overflow: hidden;
+}
+
+.dropdownContent li {
+    border-radius: 1rem;
+    background-color: #4158D0;
+    background-image: linear-gradient(43deg, #41eddc 0%, #C850C0 46%, #f8674d 100%);
+    box-shadow: rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset, rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset, rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px, rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px, rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px;
+
+
+    position: relative;
+    margin-top: 10px;
+    left: 100%;
+    transition: 0.5s;
+    transition-delay: calc(60ms * var(--delay));
+    color: black;
+
+}
+
+.dropdownBtn:focus+.dropdownContent li {
+    left: 0;
+}
+
+.dropdownBtn:focus+.dropdownContent {
+    visibility: visible;
+}
+
+.dropdownBtn:focus>.arrow {
+    transform: rotate(180deg);
+}
+
+.dropdownContent li:hover {
+    background: rgb(255, 255, 255);
+
+}
+
+.dropdownContent li a {
+    display: block;
+    padding: 0.7em 0.5em;
+    color: white;
+    text-decoration: none;
+}
+
+.dropdownContent li a:hover {
+    color: black;
+}
+
+.btn {
+    width: 30%;
+
+    justify-self: flex-end;
+    --border-color: linear-gradient(-45deg, #ffae00, #7e03aa, #00fffb);
+    --border-width: .125em;
+    --curve-size: .5em;
+    --blur: 30px;
+    --bg: #080312;
+    --color: #afffff;
+    color: var(--color);
+    /* use position: relative; so that BG is only for .btn */
+    position: relative;
+    isolation: isolate;
+    display: inline-grid;
+    place-content: center;
+    padding: .5em 1em;
+    font-size: 17px;
+    border: 0;
+    text-transform: uppercase;
+    box-shadow: 10px 10px 20px rgba(0, 0, 0, .6);
+    clip-path: polygon(
+            /* Top-left */
+            0% var(--curve-size),
+
+            var(--curve-size) 0,
+            /* top-right */
+            100% 0,
+            100% calc(100% - var(--curve-size)),
+
+            /* bottom-right 1 */
+            calc(100% - var(--curve-size)) 100%,
+            /* bottom-right 2 */
+            0 100%);
+    transition: color 250ms;
+
+}
+
+.btn::after,
+.btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+}
+
+.btn::before {
+    background: var(--border-color);
+    background-size: 300% 300%;
+    animation: move-bg7234 5s ease infinite;
+    z-index: -2;
+}
+
+@keyframes move-bg7234 {
+    0% {
+        background-position: 31% 0%
+    }
+
+    50% {
+        background-position: 70% 100%
+    }
+
+    100% {
+        background-position: 31% 0%
+    }
+}
+
+.btn::after {
+    background: var(--bg);
+    z-index: -1;
+    clip-path: polygon(
+            /* Top-left */
+            var(--border-width) calc(var(--curve-size) + var(--border-width) * .5),
+
+            calc(var(--curve-size) + var(--border-width) * .5) var(--border-width),
+
+            /* top-right */
+            calc(100% - var(--border-width)) var(--border-width),
+
+            calc(100% - var(--border-width)) calc(100% - calc(var(--curve-size) + var(--border-width) * .5)),
+
+            /* bottom-right 1 */
+            calc(100% - calc(var(--curve-size) + var(--border-width) * .5)) calc(100% - var(--border-width)),
+            /* bottom-right 2 */
+            var(--border-width) calc(100% - var(--border-width)));
+    transition: clip-path 500ms;
+}
+
+.btn:where(:hover, :focus)::after {
+    clip-path: polygon(
+            /* Top-left */
+            calc(100% - var(--border-width)) calc(100% - calc(var(--curve-size) + var(--border-width) * 0.5)),
+
+            calc(100% - var(--border-width)) var(--border-width),
+
+            /* top-right */
+            calc(100% - var(--border-width)) var(--border-width),
+
+            calc(100% - var(--border-width)) calc(100% - calc(var(--curve-size) + var(--border-width) * .5)),
+
+            /* bottom-right 1 */
+            calc(100% - calc(var(--curve-size) + var(--border-width) * .5)) calc(100% - var(--border-width)),
+
+            /* bottom-right 2 */
+            calc(100% - calc(var(--curve-size) + var(--border-width) * 0.5)) calc(100% - var(--border-width)));
+    transition: 200ms;
+}
+
+.btn:where(:hover, :focus) {
+    color: #fff;
+}
+
+.buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 30px;
+}
+
+.back {
+    width: 15%;
+}

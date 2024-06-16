@@ -1,0 +1,57 @@
+div {
+    box-sizing: border-box;
+}
+
+.container {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-rows: 10% 90%;
+    background-color: rgba(255, 255, 255, 0.725);
+    color: black;
+
+
+}
+
+.filter {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 3fr 3fr 2fr 2fr 2fr 2fr 3fr 1fr;
+    gap: 20px;
+    border-bottom: 1px solid rgb(197, 197, 197);
+    align-items: center;
+
+}
+
+
+
+.filter div:nth-child(1) {
+    justify-self: center;
+}
+
+.filter div:nth-child(n+3):nth-child(-n+7) {
+    justify-self: right;
+}
+
+.filter div:nth-child(8) {
+    justify-self: center;
+}
+
+.filter div {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.coinListContainer {
+    width:100%;
+    height:100%;
+    position: relative;
+}
+.coinList {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+
+}

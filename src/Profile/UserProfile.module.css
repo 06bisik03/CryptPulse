@@ -1,0 +1,144 @@
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:ital@1&display=swap');
+
+.container {
+    max-width: 100%;
+    height: 100%;
+    min-height: 100vh;
+    max-height: 100vh;
+    display: grid;
+    grid-template-rows: 10% 90%;
+    background: radial-gradient(circle at 52.1% -29.6%, rgb(144, 17, 105) 0%, rgb(51, 0, 131) 100.2%);
+    background-size: cover;
+    background-position: center;
+    font-family: 'Chakra Petch', sans-serif;
+
+}
+
+.details {
+    height: 100%;
+    width: 100%;
+    display: grid;
+    grid-template-rows: 30% 70%;
+
+
+
+
+
+}
+
+
+.coins {
+    min-width: 100%;
+    display: flex;
+    overflow-x: scroll;
+
+
+}
+
+.accountState {
+    max-height: 95%;
+
+    display: grid;
+    width: 100%;
+    grid-template-columns: 34% 64%;
+    margin-top: 27px;
+    gap: 2%;
+    margin-bottom: 25px;
+}
+
+.graph {
+    height: 100%;
+    width: 100%;
+    display: grid;
+    grid-template-rows: 30% 70%;
+    background-color: rgba(255, 255, 255, 0.628);
+    justify-items: center;
+    border-radius: 15px;
+    margin-left: 10px;
+
+
+
+
+
+
+}
+
+.noInvestment {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    justify-self: center;
+    font-size: 40px;
+    align-items: center;
+    justify-content: center;
+    color: white
+}
+
+.noTrs {
+    width: 100%;
+    height: 100%;
+
+    font-size: 45px;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+}
+
+.currentFlow {
+
+    display: grid;
+    align-items: center;
+    width: 100%;
+
+    justify-items: center;
+
+}
+
+.currentFlowFigures {
+    justify-content: center;
+    display: flex;
+    gap: 40px;
+    width: 100%;
+    height: 100%;
+}
+
+.title {
+    padding-left: 30px;
+
+    display: flex;
+    align-items: center;
+    font-size: 25px
+}
+
+.pastTransactions {
+    background-color: rgba(255, 255, 255, 0.628);
+    margin-right: 20px;
+    display: grid;
+    grid-template-rows: 10% 90%;
+    min-height: 0;
+    max-height: 100%;
+    border-radius: 15px;
+
+
+
+
+
+}
+
+.transactionContainer {
+    overflow-y: auto;
+
+    min-height: auto;
+
+
+
+
+}
+
+.currentFlowFigures div:nth-child(-n+3) {
+    display: grid;
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+}
