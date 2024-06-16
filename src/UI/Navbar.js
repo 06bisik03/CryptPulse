@@ -3,7 +3,7 @@ import styles from "./Navbar.module.css";
 import { useContext, useEffect, useState } from "react";
 import AuthContext from "../Store/user-ctx";
 import { readUserData } from "../firebase";
-import LazyLoad from "react-lazy-load";
+
 const Navbar = (props) => {
   const [prof, setProf] = useState("Profile");
   const userLog = localStorage.getItem("userLogged");
