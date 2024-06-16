@@ -28,7 +28,7 @@ const ShowRoom = (props) => {
     img.src = imgBack; 
     img.onload = () => setIsImageLoaded(true);
     console.log(img.src, isImageLoaded);
-  }, [dispatch, dataGeneral, dataGlobal, dataTrending]);
+  }, [dispatch, dataGeneral, isImageLoaded,dataGlobal, dataTrending]);
 
   const losersSlice = dataGeneral.slice();
   const gainersSlice = dataGeneral.slice();
