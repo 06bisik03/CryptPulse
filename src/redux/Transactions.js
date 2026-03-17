@@ -1,14 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { getTransactionArray } from "../firebase";
-const userLogged = localStorage.getItem("userLogged");
-const transactionsArray = await getTransactionArray(userLogged);
+
 const transactionsSlice = createSlice({
   name: "transactions",
-  initialState: transactionsArray,
-  
+  initialState: [],
   reducers: {
-    addTransaction(state, transaction) {
-      state.push(transaction);
+    setTransactions(state, action) {
+      return Array.isArray(action.payload) ? action.payload : [];
+    },
+    addTransaction(state, action) {
+      state.push(action.payload);
     },
   },
 });

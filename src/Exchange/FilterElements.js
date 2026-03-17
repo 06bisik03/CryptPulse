@@ -49,27 +49,19 @@ const FilterElements = (props) => {
   useEffect(() => {
     const handleWheelScroll = (event) => {
       if (containerRef.current) {
-        console.log("Wheel event detected"); // Debug log
-        // Prevent default vertical scrolling
         event.preventDefault();
-        // Scroll horizontally
         containerRef.current.scrollLeft += event.deltaY;
-        console.log(`Scrolled to: ${containerRef.current.scrollLeft}`); // Debug log
       }
     };
 
     const container = containerRef.current;
     if (container) {
-      // Attach the wheel event listener
       container.addEventListener("wheel", handleWheelScroll);
-      console.log("Event listener attached"); // Debug log
     }
 
     return () => {
       if (container) {
-        // Clean up the event listener on component unmount
         container.removeEventListener("wheel", handleWheelScroll);
-        console.log("Event listener removed"); // Debug log
       }
     };
   }, []);

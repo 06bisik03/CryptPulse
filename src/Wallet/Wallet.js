@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Navbar from "../UI/Navbar";
 import Card from "../UI/Wallet/Card";
 import styles from "./Wallet.module.css";
@@ -6,21 +6,29 @@ import CardAddition from "./CardAddition";
 import { useNavigate } from "react-router";
 import { setupCardsListener } from "../firebase";
 import {
+  auth,
+  createDefaultUserFinanceDetails,
+  ensureUserRecord,
   readUserData,
   readUserFinanceDetails,
   setupMoneyListener,
 } from "../firebase";
 import TopUp from "./TopUp";
 import LoadingScreen from "../LoadingScreen";
+import AuthContext from "../Store/user-ctx";
+
 const Wallet = () => {
   const [userName, setUserName] = useState("");
   const [topUp, setTopUp] = useState(false);
   const [userFinanceDetails, setUserFinanceDetails] = useState(null);
   const [cardAddition, setCardAddition] = useState(false);
   const [money, setMoney] = useState(0);
+  const [walletLoading, setWalletLoading] = useState(true);
+  const [walletError, setWalletError] = useState("");
 
   const [allCards, setAllCards] = useState([]);
   const navigate = useNavigate();
+  const authctx = useContext(AuthContext);
   //Store all card images inside an object
   const cardImages = {
     Mastercard: "/images/logomaster.png",
@@ -31,37 +39,103 @@ const Wallet = () => {
   };
   //33-48:  if user is logged in, extract the user's name and financial details
   useEffect(() => {
-    const userLoggedATM = localStorage.getItem('userLogged');
-    if (userLoggedATM === null) {
+    let isMounted = true;
+
+    if (!authctx.authReady) {
+      return;
+    }
+
+    if (!authctx.isLoggedIn || !authctx.currentUser) {
       navigate("/profile");
       return;
     }
-    readUserData(userLoggedATM).then((userData) => {
-      setUserName(userData.fullName);
-    });
 
-    readUserFinanceDetails(userLoggedATM).then(
-      (userData) => {
-        setUserFinanceDetails(userData);
+    const loadWalletData = async () => {
+      setWalletLoading(true);
+      setWalletError("");
+
+      try {
+        const [userData, financeData] = await Promise.all([
+          readUserData(authctx.currentUser),
+          readUserFinanceDetails(authctx.currentUser),
+        ]);
+
+        let nextUserData = userData;
+        let nextFinanceData = financeData;
+
+        if ((!nextUserData || !nextFinanceData) && auth.currentUser) {
+          const ensuredUserData = await ensureUserRecord(auth.currentUser);
+          nextUserData = nextUserData || ensuredUserData;
+          nextFinanceData = nextFinanceData || ensuredUserData.userFinanceDetails;
+        }
+
+        if (!isMounted) {
+          return;
+        }
+
+        setUserName(nextUserData?.fullName || "");
+        setUserFinanceDetails(
+          nextFinanceData || createDefaultUserFinanceDetails()
+        );
+      } catch (error) {
+        console.error("Error loading wallet data:", error);
+
+        if (!isMounted) {
+          return;
+        }
+
+        setWalletError("Wallet data could not be loaded.");
+        setUserFinanceDetails(createDefaultUserFinanceDetails());
+      } finally {
+        if (isMounted) {
+          setWalletLoading(false);
+        }
       }
-    );
-  }, [navigate]);
+    };
+
+    loadWalletData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [authctx.authReady, authctx.currentUser, authctx.isLoggedIn, navigate]);
+
   //subscribe to the changes that will take place in userFinanceDetails: 
   useEffect(() => {
-    const userLoggedATM= localStorage.getItem('userLogged');
-    setupMoneyListener(userLoggedATM, setMoney);
-    const unsubscribe = setupCardsListener(
-      userLoggedATM,
+    if (!authctx.authReady || !authctx.isLoggedIn || !authctx.currentUser) {
+      return undefined;
+    }
+
+    const unsubscribeMoney = setupMoneyListener(authctx.currentUser, setMoney);
+    const unsubscribeCards = setupCardsListener(
+      authctx.currentUser,
       setAllCards
     );
-    return () => unsubscribe();
-  }, [userFinanceDetails]);
 
+    return () => {
+      unsubscribeMoney();
+      unsubscribeCards();
+    };
+  }, [
+    authctx.authReady,
+    authctx.currentUser,
+    authctx.isLoggedIn,
+    userFinanceDetails,
+  ]);
+
+  if (!authctx.authReady) {
+    return <LoadingScreen />;
+  }
+
+  if (walletLoading) {
+    return <LoadingScreen />;
+  }
 
   if (userFinanceDetails) {
     return (
       <div className={styles.container}>
         <Navbar />
+        {walletError ? <p>{walletError}</p> : null}
         {cardAddition && (
           <CardAddition cancelAddition={() => setCardAddition(false)} />
         )}
@@ -70,19 +144,28 @@ const Wallet = () => {
         )}
         <div className={styles.wallet}>
           <div className={styles.figures}>
-            <div>{userName}</div>
-            <div>
-              $ {money.toFixed(3)}{" "}
-              <i class="fa-solid fa-plus" onClick={() => setTopUp(true)}></i>
+            <div className={styles.userName}>{userName}</div>
+            <div className={styles.balance}>
+              <span className={styles.balanceAmount}>$ {money.toFixed(3)}</span>
+              <button
+                type="button"
+                className={styles.balanceAction}
+                onClick={() => setTopUp(true)}
+                aria-label="Top up wallet">
+                <i className="fa-solid fa-plus"></i>
+              </button>
             </div>
           </div>
           <div className={styles.cards}>
             <div className={styles.adder}>
-              Debit/Credit Cards
-              <i
-                class="fa-solid fa-square-plus"
-                style={{ color: "#000000" }}
-                onClick={() => setCardAddition(true)}></i>
+              <span>Debit/Credit Cards</span>
+              <button
+                type="button"
+                className={styles.cardAddButton}
+                onClick={() => setCardAddition(true)}
+                aria-label="Add card">
+                <i className="fa-solid fa-square-plus"></i>
+              </button>
             </div>
             <div className={styles.card}>
               {allCards ? (

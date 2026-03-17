@@ -1,30 +1,107 @@
 .container {
     width: 100%;
-    height: 15%;
-
     display: grid;
-    grid-template-columns: 1fr 2fr 3.5fr 2.5fr 3fr 3fr;
-    padding: 0 25px;
-    font-size: 18px;
+    grid-template-columns: minmax(4rem, 5.25rem) minmax(0, 1.6fr) minmax(0, 1.25fr) repeat(3, minmax(0, 1fr));
+    gap: 0.85rem;
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
     align-items: center;
     border-bottom: 1px solid rgb(175, 175, 175);
-
+    box-sizing: border-box;
 }
-
-
 
 .container div:nth-child(1) img {
+    width: min(100%, 65px);
     max-width: 65px;
-
 }
 
+.container>div {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
 
-.container div:nth-child(2) {}
+@media (max-width: 700px) {
+    .container {
+        grid-template-columns: 4.5rem minmax(0, 1fr) minmax(0, 1fr);
+        grid-template-areas:
+            "brand card holder"
+            "brand expiry intro"
+            "brand charged charged";
+        gap: 0.75rem 0.9rem;
+        padding: 0.9rem 1rem;
+        font-size: 0.95rem;
+        align-items: start;
+    }
 
-.container div:nth-child(3) {}
+    .container div:nth-child(1) {
+        grid-area: brand;
+    }
 
-.container div:nth-child(4) {}
+    .container div:nth-child(2) {
+        grid-area: card;
+    }
 
-.container div:nth-child(5) {}
+    .container div:nth-child(3) {
+        grid-area: holder;
+    }
 
-.container div:nth-child(6) {}
+    .container div:nth-child(4) {
+        grid-area: expiry;
+    }
+
+    .container div:nth-child(5) {
+        grid-area: intro;
+    }
+
+    .container div:nth-child(6) {
+        grid-area: charged;
+    }
+
+    .container div:nth-child(n + 2)::before {
+        display: block;
+        margin-bottom: 0.2rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        opacity: 0.65;
+        text-transform: uppercase;
+    }
+
+    .container div:nth-child(2)::before {
+        content: "Card Number";
+    }
+
+    .container div:nth-child(3)::before {
+        content: "Holder";
+    }
+
+    .container div:nth-child(4)::before {
+        content: "Expires";
+    }
+
+    .container div:nth-child(5)::before {
+        content: "Introduced";
+    }
+
+    .container div:nth-child(6)::before {
+        content: "Charged";
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        grid-template-columns: 4rem minmax(0, 1fr);
+        grid-template-areas:
+            "brand card"
+            "brand holder"
+            "expiry intro"
+            "charged charged";
+        gap: 0.65rem 0.75rem;
+        padding: 0.8rem 0.9rem;
+        font-size: 0.9rem;
+    }
+
+    .container div:nth-child(1) img {
+        max-width: 56px;
+    }
+}

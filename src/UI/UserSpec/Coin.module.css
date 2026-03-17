@@ -1,113 +1,104 @@
 .container {
-    min-width: 29%;
+    width: min(100%, 34rem);
+    min-width: min(100%, 34rem);
     display: grid;
-    grid-template-columns: 45% 55%;
+    grid-template-columns: minmax(8rem, 38%) minmax(0, 1fr);
     background-color: rgba(255, 255, 255, 0.628);
     border-radius: 15px;
     overflow: hidden;
-    margin: 0 2%;
-    margin-bottom: 0.5%;
-
-
-
+    margin: 0;
+    padding: 1rem;
+    gap: 1rem;
+    box-sizing: border-box;
 }
 
 .image {
     display: grid;
     align-items: center;
+    justify-items: center;
 }
 
 .image img {
-    max-width: 75%;
+    width: min(11rem, 100%);
+    max-width: 100%;
     height: auto;
     display: block;
-    padding-left: 25px;
+    padding-left: 0;
 }
 
 .details {
     display: grid;
-    grid-template-rows: 1fr 4fr 1fr;
-
+    grid-template-rows: auto 1fr auto;
+    gap: 0.85rem;
+    min-width: 0;
 }
 
 .name {
-    font-size: 20px;
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    text-align: left;
+    font-size: 20px;
 }
 
 .figures {
-
     display: grid;
-    grid-template-rows: 50% 50%;
-
-}
-
-.figure {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-
+    grid-template-rows: auto auto;
+    gap: 1rem;
 }
 
 .actualPrices {
     display: grid;
     grid-template-rows: 1fr 1fr;
+    gap: 0.5rem;
     width: 100%;
 }
 
 .title {
-    margin-left: 10px;
     display: flex;
     align-items: center;
-    width: 100%;
+    min-width: 0;
 }
 
 .figure {
     display: flex;
+    justify-content: flex-end;
     align-items: center;
-    justify-content: center;
     width: 100%;
+    min-width: 0;
+    text-align: right;
+    word-break: break-word;
 }
 
 .currentPrice,
 .buyPoint {
-
-    display: flex;
-    gap: 20px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.4rem 1rem;
+    align-items: center;
     width: 100%;
 }
 
 .lastUpdate {
     display: grid;
-    grid-template-columns: 1fr 3fr;
-
-    white-space: nowrap;
-    /* Prevent text from wrapping */
-    overflow: hidden;
-    /* Hide overflowing text */
-    text-overflow: ellipsis;
-    /* Show ellipsis (...) if text overflows */
-
+    grid-template-columns: auto 1fr;
+    gap: 0.75rem;
+    align-items: center;
 }
 
-
-
 .profitMargin {
-    font-size: 32px;
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
-    gap: 15px;
-
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    font-size: clamp(1.5rem, 3vw, 2rem);
 }
 
 .name i {
-    margin-left: 10px;
     font-size: 14px;
-    margin-top: 3px;
     cursor: pointer;
     transition: transform 0.3s ease;
 }
@@ -117,5 +108,101 @@
 }
 
 .profitMargin i {
-    margin-right: 20px;
+    margin-right: 0;
+}
+
+@media (max-width: 700px) {
+    .container {
+        width: 100%;
+        min-width: 0;
+        height: 100%;
+        grid-template-columns: 3.6rem minmax(0, 1fr);
+        gap: 0.45rem;
+        padding: 0.55rem;
+        border-radius: 12px;
+        align-items: start;
+    }
+
+    .details {
+        gap: 0.35rem;
+        grid-template-rows: auto auto auto auto;
+    }
+
+    .name {
+        justify-content: flex-start;
+        text-align: left;
+        font-size: 0.82rem;
+        gap: 0.25rem;
+    }
+
+    .currentPrice,
+    .buyPoint,
+    .lastUpdate {
+        grid-template-columns: auto 1fr;
+        gap: 0.2rem 0.35rem;
+    }
+
+    .figure {
+        justify-content: flex-start;
+        text-align: left;
+        font-size: 0.7rem;
+        line-height: 1.15;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .profitMargin {
+        justify-content: flex-start;
+        gap: 0.25rem;
+        font-size: 0.95rem;
+    }
+
+    .title {
+        font-size: 0.62rem;
+        white-space: nowrap;
+    }
+
+    .actualPrices {
+        gap: 0.22rem;
+    }
+
+    .image img {
+        width: 3.6rem;
+    }
+
+    .name i {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        grid-template-columns: 3rem minmax(0, 1fr);
+        padding: 0.45rem;
+    }
+
+    .name {
+        font-size: 0.72rem;
+    }
+
+    .profitMargin {
+        font-size: 0.82rem;
+    }
+
+    .title {
+        font-size: 0.56rem;
+    }
+
+    .figure {
+        font-size: 0.62rem;
+    }
+
+    .image img {
+        width: 3rem;
+    }
+
+    .name i {
+        font-size: 10px;
+    }
 }

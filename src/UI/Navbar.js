@@ -6,18 +6,17 @@ import { readUserData } from "../firebase";
 
 const Navbar = (props) => {
   const [prof, setProf] = useState("Profile");
-  const userLog = localStorage.getItem("userLogged");
   const authctx = useContext(AuthContext);
   //if the user is signed in, set the name that will appear on the navbar to the users full name from firebase. If not, set it to 'Profile'.
   useEffect(() => {
-    if (localStorage.getItem("userLogged") !== null) {
-      readUserData(localStorage.getItem("userLogged")).then((userData) => {
-        setProf(userData.fullName);
+    if (authctx.currentUser) {
+      readUserData(authctx.currentUser).then((userData) => {
+        setProf(userData?.fullName || "Profile");
       });
     } else {
       setProf("Profile");
     }
-  }, [userLog]);
+  }, [authctx.currentUser]);
 
   return (
     <div className={styles.container}>

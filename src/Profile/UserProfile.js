@@ -9,10 +9,12 @@ import {
   setupAccountFlowListener,
   setupCoinsListener,
 } from "../firebase";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import LoadingScreen from "../LoadingScreen";
 import { useDispatch } from "react-redux";
 import { fetcherGeneral } from "../redux/Api";
+import AuthContext from "../Store/user-ctx";
+
 const UserProfile = () => {
   const generalCoins = useSelector((state) => state.api.generalCoins);
   const [transactions, setTransactions] = useState([]);
@@ -26,9 +28,13 @@ const UserProfile = () => {
     totalFlow: 0,
   });
   const dispatch = useDispatch();
-  const userLog = localStorage.getItem('userLogged');
+  const authctx = useContext(AuthContext);
+
   useEffect(() => {
-    const userLoggedATM = localStorage.getItem("userLogged");
+    if (!authctx.currentUser) {
+      return undefined;
+    }
+
     //32-40: The listener are going to call these functions when the data changes. They change the states of the variables we declared at the beginning.
     const handleAccountFlowChange = (accountFlowData) => {
       setAccountFlow(accountFlowData);
@@ -40,10 +46,25 @@ const UserProfile = () => {
       setTransactions(transactionsArray);
     };
     //40-43: Listeners for whenever the data we rely on changes
-    setupCoinsListener(userLoggedATM, handleCoinsChange);
-    setupTransactionsListener(userLoggedATM, handleTransactionsChange);
-    setupAccountFlowListener(userLoggedATM, handleAccountFlowChange);
-  }, [userLog]);
+    const unsubscribeCoins = setupCoinsListener(
+      authctx.currentUser,
+      handleCoinsChange
+    );
+    const unsubscribeTransactions = setupTransactionsListener(
+      authctx.currentUser,
+      handleTransactionsChange
+    );
+    const unsubscribeAccountFlow = setupAccountFlowListener(
+      authctx.currentUser,
+      handleAccountFlowChange
+    );
+
+    return () => {
+      unsubscribeCoins();
+      unsubscribeTransactions();
+      unsubscribeAccountFlow();
+    };
+  }, [authctx.currentUser]);
   //dispatch fetch action in another hook to prevent calling it when the other data changes
   useEffect(() => {
     dispatch(fetcherGeneral());
@@ -72,6 +93,10 @@ const UserProfile = () => {
     }
   }, [filteredGeneralCoins]);
 
+  if (!authctx.authReady) {
+    return <LoadingScreen />;
+  }
+
   if (loading) {
     return <LoadingScreen />;
   } else {
@@ -82,7 +107,6 @@ const UserProfile = () => {
           <div className={styles.coins}>
             {coins.length > 0 && filteredGeneralCoins[0] !== 0 ? (
               coins.map((coin) => {
-                console.log(coins);
                 return (
                   <Coin
                     coin={coin}

@@ -1,9 +1,9 @@
 .container {
     width: 100%;
-    height: 100%;
     min-height: 100vh;
     display: grid;
-    grid-template-rows: 10% 90%;
+    grid-template-rows: auto 1fr;
+    align-content: start;
     background: radial-gradient(circle at 52.1% -29.6%, rgb(144, 17, 105) 0%, rgb(51, 0, 131) 100.2%);
     background-position: center;
     background-size: cover;
@@ -11,101 +11,148 @@
 }
 
 .wallet {
-    height: 98%;
-    width: 100%;
+    width: min(100%, 84rem);
     display: grid;
-    grid-template-rows: 20% 80%;
-    margin-top: 1%;
-
+    grid-template-rows: auto 1fr;
+    gap: 1.25rem;
+    justify-self: center;
+    padding: 2rem 1rem 1.5rem;
+    box-sizing: border-box;
 }
 
 .figures {
     width: 100%;
-    height: 100%;
     display: grid;
+    gap: 0.85rem;
     justify-items: center;
-
 }
 
-.figures div:nth-child(1) {
+.userName {
     display: flex;
-    width: 40%;
-    height: 80%;
-    margin-top: 1%;
     justify-content: center;
-
-    font-size: 30px;
+    text-align: center;
+    font-size: clamp(2rem, 6vw, 3.1rem);
+    overflow-wrap: anywhere;
 }
 
-.figures div:nth-child(2) {
+.balance {
     display: flex;
-    font-size: 40px;
-    width: 30%;
-    height: 80%;
-    margin: 1%;
-
     justify-content: center;
+    align-items: center;
+    gap: 0.85rem;
+    flex-wrap: wrap;
 }
 
-.figures div:nth-child(2) i {
-    max-height: 45px;
-    font-size: 40px;
-    margin-top: 5px;
-    margin-left: 10px;
+.balanceAmount {
+    font-size: clamp(2.2rem, 8vw, 4rem);
+    line-height: 1;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+.balanceAction,
+.cardAddButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    color: inherit;
     cursor: pointer;
     transition: color 0.3s ease;
+    padding: 0;
 }
 
-.figures div:nth-child(2) i:hover {
+.balanceAction {
+    font-size: clamp(2rem, 7vw, 3.2rem);
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+}
+
+.balanceAction:hover {
     color: yellowgreen;
 }
 
 .cards {
-    width: 96%;
-    height: 98%;
+    width: 100%;
     background-color: rgba(255, 255, 255, 0.725);
     display: grid;
-    grid-template-rows: 10% 90%;
+    grid-template-rows: auto 1fr;
     color: black;
-    margin-left: 2%;
-
-    margin-bottom: 2%;
-
-
+    border-radius: 1rem;
+    overflow: hidden;
+    min-height: 26rem;
 }
 
 .adder {
     width: 100%;
-    height: 100%;
     border-bottom: 1px solid rgb(175, 175, 175);
-    font-size: 20px;
-    padding-left: 25px;
+    font-size: clamp(1.1rem, 2.6vw, 1.45rem);
+    padding: 1rem 1.25rem;
     display: flex;
     align-items: center;
-
+    justify-content: space-between;
+    gap: 1rem;
+    box-sizing: border-box;
 }
 
-.adder i {
-    margin-left: 10px;
-    font-size: 16px;
-    margin-top: 3px;
-    cursor: pointer;
-    transition: font-size 0.3s ease;
+.cardAddButton {
+    font-size: 1.1rem;
     transition: color 0.3s ease;
-    color: black;
 }
 
-.adder i:hover {
-    font-size: 20px;
-
-    color: green !important;
+.cardAddButton:hover {
+    color: green;
 }
 
 .card {
-    height: 100%;
     width: 100%;
+    display: grid;
+    align-content: start;
     overflow-y: auto;
+    min-height: 0;
+}
 
+@media (max-width: 700px) {
+    .wallet {
+        gap: 1rem;
+        padding: 1.5rem 0.75rem 1rem;
+    }
 
+    .adder {
+        padding: 0.85rem 1rem;
+    }
 
+    .cards {
+        min-height: 22rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .wallet {
+        padding: 1.1rem 0.25rem 0.75rem;
+    }
+
+    .figures {
+        gap: 0.65rem;
+        padding: 0 0.35rem;
+    }
+
+    .balance {
+        gap: 0.55rem;
+    }
+
+    .balanceAmount {
+        font-size: clamp(1.8rem, 9vw, 2.7rem);
+    }
+
+    .balanceAction {
+        font-size: 2.2rem;
+        min-width: 2.35rem;
+        min-height: 2.35rem;
+    }
+
+    .adder {
+        padding: 0.75rem 0.9rem;
+    }
 }

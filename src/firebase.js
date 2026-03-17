@@ -25,34 +25,146 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const db = getDatabase();
+const db = getDatabase(app);
+const emptyFn = () => {};
+const defaultAccountFlow = {
+  deposits: 0,
+  investments: 0,
+  totalFlow: 0,
+};
+export const createDefaultUserFinanceDetails = () => ({
+  coins: [],
+  transactions: [],
+  money: 0,
+  wallet: {
+    cards: {},
+  },
+  totalFlow: 0,
+  deposits: 0,
+  investments: 0,
+});
+const hasValidUserId = (userId) =>
+  typeof userId === "string" &&
+  userId.trim() !== "" &&
+  userId !== "null" &&
+  userId !== "undefined";
+const normalizeWallet = (wallet) => {
+  if (wallet && typeof wallet === "object" && !Array.isArray(wallet)) {
+    return {
+      ...wallet,
+      cards:
+        wallet.cards && typeof wallet.cards === "object" && !Array.isArray(wallet.cards)
+          ? wallet.cards
+          : {},
+    };
+  }
+
+  return {
+    cards: {},
+  };
+};
+const normalizeUserFinanceDetails = (userFinanceDetails) => {
+  const defaultFinanceDetails = createDefaultUserFinanceDetails();
+
+  if (
+    !userFinanceDetails ||
+    typeof userFinanceDetails !== "object" ||
+    Array.isArray(userFinanceDetails)
+  ) {
+    return defaultFinanceDetails;
+  }
+
+  return {
+    ...defaultFinanceDetails,
+    ...userFinanceDetails,
+    coins: Array.isArray(userFinanceDetails.coins)
+      ? userFinanceDetails.coins
+      : defaultFinanceDetails.coins,
+    transactions: Array.isArray(userFinanceDetails.transactions)
+      ? userFinanceDetails.transactions
+      : defaultFinanceDetails.transactions,
+    wallet: normalizeWallet(userFinanceDetails.wallet),
+  };
+};
+const getFallbackFullName = (authUser) => {
+  if (authUser?.displayName?.trim()) {
+    return authUser.displayName.trim();
+  }
+
+  if (authUser?.email?.includes("@")) {
+    return authUser.email.split("@")[0];
+  }
+
+  return "User";
+};
 
 //////////////////
 
 // Import necessary functions and modules
-const dbRef = ref(getDatabase());
+const dbRef = ref(db);
 
 // Function to write user data to the database
-export function writeUserData(
+export async function writeUserData(
   userId,
   userFinance,
   name,
   email,
-  password,
   dateOfBirth
 ) {
+  if (!hasValidUserId(userId)) {
+    throw new Error("Cannot write user data without a valid user id.");
+  }
+
   // Set user data in the database under the "users" collection and the provided userId
-  set(ref(db, "users/" + userId), {
+  return set(ref(db, "users/" + userId), {
     fullName: name,
     email: email,
-    password: password,
     DateOfBirth: dateOfBirth,
-    userFinanceDetails: userFinance,
+    userFinanceDetails: normalizeUserFinanceDetails(userFinance),
   });
 }
 
+export const ensureUserRecord = async (authUser, profileOverrides = {}) => {
+  if (!authUser?.uid) {
+    throw new Error("Cannot ensure user data without an authenticated user.");
+  }
+
+  const userRef = ref(db, `users/${authUser.uid}`);
+  const snapshot = await get(userRef);
+  const existingData = snapshot.exists() ? snapshot.val() : null;
+  const fallbackData = {
+    fullName: profileOverrides.fullName || getFallbackFullName(authUser),
+    email: profileOverrides.email || authUser.email || "",
+    DateOfBirth: profileOverrides.dateOfBirth || "",
+    userFinanceDetails: normalizeUserFinanceDetails(
+      profileOverrides.userFinanceDetails
+    ),
+  };
+
+  if (!existingData) {
+    await set(userRef, fallbackData);
+    return fallbackData;
+  }
+
+  const normalizedData = {
+    fullName: existingData.fullName || fallbackData.fullName,
+    email: existingData.email || fallbackData.email,
+    DateOfBirth: existingData.DateOfBirth || fallbackData.DateOfBirth,
+    userFinanceDetails: normalizeUserFinanceDetails(
+      existingData.userFinanceDetails
+    ),
+  };
+
+  await set(userRef, normalizedData);
+  return normalizedData;
+};
+
 // Async function to read user data from the database
 export const readUserData = async (user) => {
+  if (!hasValidUserId(user)) {
+    return null;
+  }
+
   try {
     // Get a snapshot of the user's data from the provided user path
     const snapshot = await get(child(dbRef, `users/${user}`));
@@ -65,8 +177,8 @@ export const readUserData = async (user) => {
       return null;
     }
   } catch (error) {
-    // Throw any error that occurs during the process
-    throw error;
+    console.error("Error reading user data:", error);
+    return null;
   }
 };
 
@@ -203,7 +315,11 @@ export const buyCoin = async (transactionDetail) => {
 
 // Async function to get the user's transaction array from the database
 export const getTransactionArray = async (userLogged) => {
-  const db = getDatabase();
+  if (!hasValidUserId(userLogged)) {
+    return [];
+  }
+
+  const db = getDatabase(app);
   const transactionsRef = child(
     ref(db),
     `users/${userLogged}/userFinanceDetails/transactions`
@@ -229,42 +345,70 @@ export const getTransactionArray = async (userLogged) => {
 };
 // Set up a listener for changes in the 'coins' array
 export const setupCoinsListener = (userLogged, onCoinsChange) => {
-  const db = getDatabase();
+  if (!hasValidUserId(userLogged)) {
+    onCoinsChange([]);
+    return emptyFn;
+  }
+
+  const db = getDatabase(app);
   const coinsRef = ref(db, `users/${userLogged}/userFinanceDetails/coins`);
 
   // Set up a listener using onValue to watch for changes in the 'coins' array
-  onValue(coinsRef, (snapshot) => {
-    const coinsArray = snapshot.val();
-    // Check if the snapshot has a value
-    if (coinsArray !== null) {
-      // Call the provided callback with the updated 'coins' array
-      onCoinsChange(coinsArray);
-    } else {
-      // Handle the case when the array is empty by passing an empty array
+  return onValue(
+    coinsRef,
+    (snapshot) => {
+      const coinsArray = snapshot.val();
+      // Check if the snapshot has a value
+      if (coinsArray !== null) {
+        // Call the provided callback with the updated 'coins' array
+        onCoinsChange(coinsArray);
+      } else {
+        // Handle the case when the array is empty by passing an empty array
+        onCoinsChange([]);
+      }
+    },
+    (error) => {
+      console.error("Error listening for coins:", error);
       onCoinsChange([]);
     }
-  });
+  );
 };
 
 // Set up a listener for changes in the 'transactions' array
 export const setupTransactionsListener = (userLogged, onTransactionsChange) => {
-  const db = getDatabase();
+  if (!hasValidUserId(userLogged)) {
+    onTransactionsChange([]);
+    return emptyFn;
+  }
+
+  const db = getDatabase(app);
   const transactionsRef = ref(
     db,
     `users/${userLogged}/userFinanceDetails/transactions`
   );
 
   // Set up a listener using onValue to watch for changes in the 'transactions' array
-  onValue(transactionsRef, (snapshot) => {
-    const transactionsArray = snapshot.val();
-    // Call the provided callback with the updated 'transactions' array
-    onTransactionsChange(transactionsArray);
-  });
+  return onValue(
+    transactionsRef,
+    (snapshot) => {
+      const transactionsArray = snapshot.val();
+      // Call the provided callback with the updated 'transactions' array
+      onTransactionsChange(transactionsArray || []);
+    },
+    (error) => {
+      console.error("Error listening for transactions:", error);
+      onTransactionsChange([]);
+    }
+  );
 };
 
 // Async function to fetch the 'coins' array from Firebase
 export const getCoinsArrayFromFirebase = async (userLogged) => {
-  const db = getDatabase();
+  if (!hasValidUserId(userLogged)) {
+    return [];
+  }
+
+  const db = getDatabase(app);
   const coinsRef = child(
     ref(db),
     `users/${userLogged}/userFinanceDetails/coins`
@@ -337,7 +481,11 @@ export const createWalletAndCardsFolders = async (userLogged, cardInfo) => {
 
 // Async function to fetch the 'cards' array from Firebase
 export const getCardsArrayFromFirebase = async (userLogged) => {
-  const db = getDatabase();
+  if (!hasValidUserId(userLogged)) {
+    return [];
+  }
+
+  const db = getDatabase(app);
   const cardsRef = ref(
     db,
     `users/${userLogged}/userFinanceDetails/wallet/cards`
@@ -359,7 +507,12 @@ export const getCardsArrayFromFirebase = async (userLogged) => {
 };
 // Set up a listener for changes in the 'cards' array
 export const setupCardsListener = (userLogged, callback) => {
-  const db = getDatabase();
+  if (!hasValidUserId(userLogged)) {
+    callback([]);
+    return emptyFn;
+  }
+
+  const db = getDatabase(app);
   const cardsRef = ref(
     db,
     `users/${userLogged}/userFinanceDetails/wallet/cards`
@@ -370,6 +523,9 @@ export const setupCardsListener = (userLogged, callback) => {
     const cardsArray = snapshot.val() || []; // If snapshot.val() is null, use an empty array
     // Call the provided callback with the updated 'cards' array
     callback(cardsArray);
+  }, (error) => {
+    console.error("Error listening for cards:", error);
+    callback([]);
   });
 };
 
@@ -476,7 +632,11 @@ export const updateMoney = async (userLogged, operation, amount) => {
 };
 // Async function to read user finance details from Firebase
 export const readUserFinanceDetails = async (userId) => {
-  const db = getDatabase();
+  if (!hasValidUserId(userId)) {
+    return null;
+  }
+
+  const db = getDatabase(app);
   const financeDetailsRef = ref(db, `users/${userId}/userFinanceDetails`);
 
   try {
@@ -496,7 +656,11 @@ export const readUserFinanceDetails = async (userId) => {
 
 // Async function to access account flow details for a user
 export const accessAccountFlow = async (userLogged) => {
-  const db = getDatabase();
+  if (!hasValidUserId(userLogged)) {
+    return defaultAccountFlow;
+  }
+
+  const db = getDatabase(app);
 
   // References to user's deposits, investments, and total flow in the database
   const userDepositsRef = ref(
@@ -536,7 +700,12 @@ export const accessAccountFlow = async (userLogged) => {
 
 // Set up listeners for changes in account flow details
 export const setupAccountFlowListener = (userLogged, onAccountFlowChange) => {
-  const db = getDatabase();
+  if (!hasValidUserId(userLogged)) {
+    onAccountFlowChange(defaultAccountFlow);
+    return emptyFn;
+  }
+
+  const db = getDatabase(app);
 
   // References to user's deposits, investments, and total flow in the database
   const userDepositsRef = ref(
@@ -553,35 +722,74 @@ export const setupAccountFlowListener = (userLogged, onAccountFlowChange) => {
   );
 
   // Set up listeners for userDeposits, userInvestments, and userFlow using onValue
-  onValue(userDepositsRef, (snapshot) => {
-    const deposits = snapshot.val() || 0;
-    onAccountFlowChange((prevState) => ({ ...prevState, deposits }));
-  });
+  const unsubscribeDeposits = onValue(
+    userDepositsRef,
+    (snapshot) => {
+      const deposits = snapshot.val() || 0;
+      onAccountFlowChange((prevState) => ({ ...prevState, deposits }));
+    },
+    (error) => {
+      console.error("Error listening for deposits:", error);
+      onAccountFlowChange((prevState) => ({ ...prevState, deposits: 0 }));
+    }
+  );
 
-  onValue(userInvestmentsRef, (snapshot) => {
-    const investments = snapshot.val() || 0;
-    onAccountFlowChange((prevState) => ({ ...prevState, investments }));
-  });
+  const unsubscribeInvestments = onValue(
+    userInvestmentsRef,
+    (snapshot) => {
+      const investments = snapshot.val() || 0;
+      onAccountFlowChange((prevState) => ({ ...prevState, investments }));
+    },
+    (error) => {
+      console.error("Error listening for investments:", error);
+      onAccountFlowChange((prevState) => ({ ...prevState, investments: 0 }));
+    }
+  );
 
-  onValue(userFlowRef, (snapshot) => {
-    const totalFlow = snapshot.val() || 0;
-    onAccountFlowChange((prevState) => ({ ...prevState, totalFlow }));
-  });
+  const unsubscribeFlow = onValue(
+    userFlowRef,
+    (snapshot) => {
+      const totalFlow = snapshot.val() || 0;
+      onAccountFlowChange((prevState) => ({ ...prevState, totalFlow }));
+    },
+    (error) => {
+      console.error("Error listening for total flow:", error);
+      onAccountFlowChange((prevState) => ({ ...prevState, totalFlow: 0 }));
+    }
+  );
+
+  return () => {
+    unsubscribeDeposits();
+    unsubscribeInvestments();
+    unsubscribeFlow();
+  };
 };
 
 // Set up a listener for changes in the user's money field
 export const setupMoneyListener = (userLogged, onMoneyChange) => {
-  const db = getDatabase();
+  if (!hasValidUserId(userLogged)) {
+    onMoneyChange(0);
+    return emptyFn;
+  }
+
+  const db = getDatabase(app);
   const userMoneyRef = ref(db, `users/${userLogged}/userFinanceDetails`);
 
   // Set up a listener using onValue to watch for changes in the user's money field
-  onValue(userMoneyRef, (snapshot) => {
-    const userFinanceDetails = snapshot.val() || {};
-    const money = userFinanceDetails.money || 0;
+  return onValue(
+    userMoneyRef,
+    (snapshot) => {
+      const userFinanceDetails = snapshot.val() || {};
+      const money = userFinanceDetails.money || 0;
 
-    // Call the provided callback with the updated money value
-    onMoneyChange(money);
-  });
+      // Call the provided callback with the updated money value
+      onMoneyChange(money);
+    },
+    (error) => {
+      console.error("Error listening for money:", error);
+      onMoneyChange(0);
+    }
+  );
 };
 
 // Async function to sell a coin and update user's coin and transaction data

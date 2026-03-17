@@ -1,42 +1,51 @@
 @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:ital@1&display=swap');
 
 .container {
-    height: 100%;
+    width: 100%;
+    max-width: 100%;
+    min-height: 72px;
     display: flex;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
     background: linear-gradient(to bottom, black 40%, transparent);
     align-items: center;
     color: white;
-
+    padding: 0.75rem 1rem;
+    box-sizing: border-box;
 }
 
 .logo {
-    justify-self: flex-start;
-    max-width: 200px;
-    margin-left: 25px;
-
+    display: block;
+    width: min(200px, 55vw);
+    margin-left: 0;
 }
 
 .nav {
-    justify-self: flex-end;
-
     display: flex;
-    gap: 20px;
+    max-width: 100%;
+    min-width: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.35rem 0.75rem;
+    margin-left: auto;
 }
 
 .button {
     display: inline-block;
+    min-width: 0;
     position: relative;
-    padding: 13px 20px;
+    padding: 0.75rem 1rem;
     border: none;
     text-decoration: none;
     color: #ffffff;
-
     font-size: 16px;
     text-transform: uppercase;
     cursor: pointer;
     overflow: hidden;
     font-family: 'Chakra Petch', sans-serif;
+    white-space: nowrap;
 }
 
 .button:before {
@@ -52,4 +61,46 @@
 
 .button:hover:before {
     left: 100%;
+}
+
+@media (max-width: 900px) {
+    .container {
+        justify-content: center;
+    }
+
+    .nav {
+        width: 100%;
+        justify-content: center;
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 600px) {
+    .container {
+        padding: 0.65rem 0.75rem;
+    }
+
+    .button {
+        padding: 0.55rem 0.7rem;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 520px) {
+    .container {
+        gap: 0.5rem;
+    }
+
+    .logo {
+        width: min(170px, 48vw);
+    }
+
+    .nav {
+        gap: 0.2rem 0.45rem;
+    }
+
+    .button {
+        padding: 0.45rem 0.55rem;
+        font-size: 13px;
+    }
 }

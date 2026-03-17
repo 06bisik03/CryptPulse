@@ -35,7 +35,7 @@ const PastTransaction = (props) => {
   return (
     <div className={styles.container}>
       <div className={styles.date}>{date}</div>
-      <div>
+      <div className={styles.icon}>
         <LazyLoad>
           <img alt="x" src={props.transaction.coinImage} />
         </LazyLoad>

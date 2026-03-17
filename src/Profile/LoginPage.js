@@ -5,9 +5,43 @@ import { auth } from "../firebase";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  signOut,
 } from "firebase/auth";
-import { writeUserData } from "../firebase";
+import {
+  createDefaultUserFinanceDetails,
+  ensureUserRecord,
+  writeUserData,
+} from "../firebase";
 import { useNavigate } from "react-router";
+
+const formatAuthError = (error) => {
+  switch (error?.code) {
+    case "auth/email-already-in-use":
+      return "That email address is already in use.";
+    case "auth/invalid-email":
+      return "Enter a valid email address.";
+    case "auth/weak-password":
+      return "Password must be at least 6 characters.";
+    case "auth/invalid-login-credentials":
+    case "auth/user-not-found":
+    case "auth/wrong-password":
+      return "Email or password is incorrect.";
+    default:
+      return "Authentication failed. Please try again.";
+  }
+};
+
+const formatDatabaseError = (error) => {
+  if (
+    error?.code === "PERMISSION_DENIED" ||
+    error?.message?.toLowerCase().includes("permission")
+  ) {
+    return "Account created, but profile setup failed because Firebase Database rules denied access.";
+  }
+
+  return "Account created, but profile setup failed.";
+};
+
 const LoginPage = () => {
   const authctx = useContext(AuthContext);
   const navigate = useNavigate();
@@ -20,49 +54,69 @@ const LoginPage = () => {
   const [bday, setBday] = useState("");
   const [fullName, setFullName] = useState("");
 
-  const userFinance = {
-    coins: [],
-    transactions: [],
-    money: 0,
-    wallet: [],
-    totalFlow: 0,
-    deposits: 0,
-    investments: 0,
-  };
+  const userFinance = createDefaultUserFinanceDetails();
 
-  const handleSignUpSubmission = (event) => {
+  const handleSignUpSubmission = async (event) => {
     event.preventDefault();
-    createUserWithEmailAndPassword(auth, signUpEmail, signUpPass)
-      .then((userCredential) => {
-        const user = userCredential.user;
-        writeUserData(
+    setGotError("");
+
+    if (!fullName.trim() || !signUpEmail.trim() || !signUpPass || !bday) {
+      setGotError("Fill in all sign up fields.");
+      return;
+    }
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        signUpEmail.trim(),
+        signUpPass
+      );
+      const user = userCredential.user;
+
+      try {
+        await writeUserData(
           user.uid,
           userFinance,
-          fullName,
-          signUpEmail,
-          signUpPass,
+          fullName.trim(),
+          signUpEmail.trim(),
           bday
         );
-        //if signed up also log them in right after
-        authctx.onLogin(user.uid);
-        navigate("/profile");
-      })
-      .catch((error) => {
-          setGotError('Error signing up');
-      });
+      } catch (databaseError) {
+        await signOut(auth);
+        setGotError(formatDatabaseError(databaseError));
+        return;
+      }
+
+      //if signed up also log them in right after
+      authctx.onLogin(user.uid);
+      navigate("/profile");
+    } catch (error) {
+      setGotError(formatAuthError(error));
+    }
   };
 
-  const handleLoginSubmission = (event) => {
+  const handleLoginSubmission = async (event) => {
     event.preventDefault();
-    signInWithEmailAndPassword(auth, loginEmail, loginPass)
-      .then((userCredential) => {
-        const user = userCredential.user;
-        authctx.onLogin(user.uid);
-     
-      })
-      .catch((error) => {
-        setGotError("Error signing in.");
-      });
+    setGotError("");
+
+    if (!loginEmail.trim() || !loginPass) {
+      setGotError("Enter both email and password.");
+      return;
+    }
+
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        loginEmail.trim(),
+        loginPass
+      );
+      const user = userCredential.user;
+      await ensureUserRecord(user);
+      authctx.onLogin(user.uid);
+      navigate("/profile");
+    } catch (error) {
+      setGotError(formatAuthError(error));
+    }
   };
   return (
     <div className={styles["login-wrap"]}>
@@ -122,7 +176,7 @@ const LoginPage = () => {
               <input type="submit" className={styles.button} value="Sign In" />
             </div>
             {gotError !== "" ? (
-              <div style={{ fontSize: "20px", marginTop: "10px", color: 'yellow' }}>
+              <div style={{ fontSize: "20px", marginTop: "10px", color: "yellow" }}>
                 {gotError}{" "}
               </div>
             ) : null}

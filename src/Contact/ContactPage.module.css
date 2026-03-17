@@ -2,63 +2,64 @@
 
 .container {
     display: grid;
-    grid-template-rows: 10% 90%;
+    grid-template-rows: auto auto;
+    align-content: start;
     min-height: 100vh;
-    height: 100%;
     width: 100%;
-background: radial-gradient(circle at 52.1% -29.6%, rgb(144, 17, 105) 0%, rgb(51, 0, 131) 100.2%);
+    background: radial-gradient(circle at 52.1% -29.6%, rgb(144, 17, 105) 0%, rgb(51, 0, 131) 100.2%);
     background-size: cover;
     color: white;
     font-family: 'Chakra Petch', sans-serif;
-
-
 }
 
 .form {
-    width: 80%;
-    height: 50%;
+    width: min(100%, 54rem);
     display: grid;
     justify-self: center;
-    align-self: center;
-    grid-template-rows: 20% 20% 30% 10%;
+    justify-items: center;
+    align-content: start;
+    gap: 1.5rem;
+    padding: 3rem 1.25rem 2rem;
+    box-sizing: border-box;
 }
 
 .logo {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-bottom: 75px;
-    transform: translateX(-35px);
+    width: 100%;
+}
 
+.logo img {
+    width: clamp(16rem, 54vw, 31rem);
+    max-width: 100%;
+    height: auto;
 }
 
 .exp {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 28px;
-
+    text-align: center;
+    font-size: clamp(1.35rem, 3.4vw, 2rem);
 }
 
 .formHolder {
     display: flex;
     justify-content: center;
+    width: 100%;
 }
 
 .dropdown {
-
-
     position: relative;
-    width: 90%;
+    width: min(100%, 36rem);
 }
-
 
 .dropdownBtn {
     border-radius: 1rem;
     background-color: #4158D0;
     background-image: linear-gradient(43deg, #41eddc 0%, #C850C0 46%, #f8674d 100%);
     box-shadow: rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset, rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset, rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px, rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px, rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px;
-
     font-size: 18px;
     width: 100%;
     border: none;
@@ -66,16 +67,9 @@ background: radial-gradient(circle at 52.1% -29.6%, rgb(144, 17, 105) 0%, rgb(51
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.7em 0.5em;
-
+    padding: 0.85em 0.9em;
     cursor: pointer;
     font-family: 'Chakra Petch', sans-serif;
-
-
-
-
-
-
 }
 
 .arrow {
@@ -88,8 +82,7 @@ background: radial-gradient(circle at 52.1% -29.6%, rgb(144, 17, 105) 0%, rgb(51
 .dropdownContent {
     list-style: none;
     padding-left: 0;
-
-    top: 3.2em;
+    margin: 0.75rem 0 0;
     width: 100%;
     visibility: hidden;
     overflow: hidden;
@@ -100,7 +93,7 @@ background: radial-gradient(circle at 52.1% -29.6%, rgb(144, 17, 105) 0%, rgb(51
     background-color: #4158D0;
     background-image: linear-gradient(43deg, #41eddc 0%, #C850C0 46%, #f8674d 100%);
     box-shadow: rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset, rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset, rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px, rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px, rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px;
-color:white;
+    color: white;
     position: relative;
     margin-top: 10px;
     left: 100%;
@@ -122,14 +115,54 @@ color:white;
 
 .dropdownContent li:hover {
     background: rgb(255, 255, 255);
-
-
-
 }
 
 .dropdownContent li a {
     display: block;
-    padding: 0.7em 0.5em;
-    color:white;
+    padding: 0.8em 0.9em;
+    color: white;
     text-decoration: none;
+}
+
+@media (max-width: 700px) {
+    .form {
+        gap: 1.15rem;
+        padding: 2.5rem 0.9rem 1.25rem;
+    }
+
+    .logo img {
+        width: clamp(13rem, 68vw, 24rem);
+    }
+
+    .dropdown {
+        width: 100%;
+    }
+
+    .dropdownBtn {
+        font-size: 16px;
+        padding: 0.75em 0.8em;
+    }
+}
+
+@media (max-width: 480px) {
+    .form {
+        gap: 0.95rem;
+        padding-top: 2rem;
+    }
+
+    .logo img {
+        width: clamp(11rem, 78vw, 19rem);
+    }
+
+    .exp {
+        font-size: 1.15rem;
+    }
+
+    .dropdownBtn {
+        font-size: 15px;
+    }
+
+    .dropdownContent li a {
+        padding: 0.7em 0.8em;
+    }
 }

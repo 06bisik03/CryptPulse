@@ -10,11 +10,9 @@ const Filters = (props) => {
   return (
     <div className={styles.container}>
       <button
-        className={styles.btn}
-        style={{
-          transform: active === "topCoins" ? "scale(1.25)" : "none",
-          marginLeft: active === "topCoins" ? '14px' : '0px',
-        }}
+        className={`${styles.btn} ${
+          active === "topCoins" ? styles.active : ""
+        }`}
         onClick={() => {
           clickHandler("topcoins");
           setActive("topCoins");
@@ -22,10 +20,9 @@ const Filters = (props) => {
         Top Coins(7d)
       </button>
       <button
-        className={styles.btn}
-        style={{
-          transform: active === "topGainers" ? "scale(1.25)" : "none",
-        }}
+        className={`${styles.btn} ${
+          active === "topGainers" ? styles.active : ""
+        }`}
         onClick={() => {
           clickHandler("topgainers");
           setActive("topGainers");
@@ -34,10 +31,9 @@ const Filters = (props) => {
       </button>
 
       <button
-        className={styles.btn}
-        style={{
-          transform: active === "topLosers" ? "scale(1.25)" : "none",
-        }}
+        className={`${styles.btn} ${
+          active === "topLosers" ? styles.active : ""
+        }`}
         onClick={() => {
           clickHandler("toplosers");
           setActive("topLosers");

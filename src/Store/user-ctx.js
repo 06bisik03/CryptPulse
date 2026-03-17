@@ -1,10 +1,13 @@
 import React from "react";
 import { useEffect, useState } from "react";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { auth } from "../firebase";
 
 // Create a context for managing authentication-related state and functions.
 const AuthContext = React.createContext({
   isLoggedIn: false,
   currentUser: null,
+  authReady: false,
   onLogout: () => {},
   onLogin: () => {},
   signUp: () => {},
@@ -12,32 +15,47 @@ const AuthContext = React.createContext({
 // Component that provides the authentication context to its children.
 export const AuthContextProvider = (props) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [currentUser, setCurrentUser] = useState({});
-  // Check local storage for user login status when the component mounts.
+  const [currentUser, setCurrentUser] = useState(null);
+  const [authReady, setAuthReady] = useState(false);
+
   useEffect(() => {
-    const userLoggedIn = localStorage.getItem("isLoggedIn");
-    if (userLoggedIn === "1") {
-      setIsLoggedIn(true);
-      setCurrentUser(localStorage.getItem("userLogged"));
-    }
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        localStorage.setItem("isLoggedIn", "1");
+        localStorage.setItem("userLogged", user.uid);
+        setIsLoggedIn(true);
+        setCurrentUser(user.uid);
+      } else {
+        localStorage.removeItem("isLoggedIn");
+        localStorage.removeItem("userLogged");
+        setIsLoggedIn(false);
+        setCurrentUser(null);
+      }
+
+      setAuthReady(true);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const loginHandler = (userID) => {
-    if (
-      localStorage.getItem("isLoggedIn") === "1" &&
-      localStorage.getItem("userLogged")
-    ) {
-      localStorage.setItem("userLogged", userID);
-      setIsLoggedIn(true);
-    }
     localStorage.setItem("isLoggedIn", "1");
     localStorage.setItem("userLogged", `${userID}`);
     setIsLoggedIn(true);
+    setCurrentUser(userID);
   };
-  const logoutHandler = () => {
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("userLogged");
-    setIsLoggedIn(false);
+
+  const logoutHandler = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error("Error signing out:", error);
+    } finally {
+      localStorage.removeItem("isLoggedIn");
+      localStorage.removeItem("userLogged");
+      setIsLoggedIn(false);
+      setCurrentUser(null);
+    }
   };
 
   return (
@@ -45,6 +63,7 @@ export const AuthContextProvider = (props) => {
       value={{
         isLoggedIn: isLoggedIn,
         currentUser: currentUser,
+        authReady: authReady,
         onLogout: logoutHandler,
         onLogin: loginHandler,
       }}>

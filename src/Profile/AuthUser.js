@@ -2,13 +2,11 @@ import { onAuthStateChanged } from "firebase/auth";
 import { useEffect } from "react";
 import { auth, readUserData } from "../firebase";
 
-const AuthUser = (props) => {
+const AuthUser = () => {
   useEffect(() => {
     const listen = onAuthStateChanged(auth, (user) => {
       if (user) {
         readUserData(user.uid);
-      } else {
-        console.log('nouser')
       }
     });
 
