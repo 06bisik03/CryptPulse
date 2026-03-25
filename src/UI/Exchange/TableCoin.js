@@ -3,46 +3,59 @@ import { Link } from "react-router-dom";
 import CryptoChart from "./CryptoChart";
 import LazyLoad from "react-lazy-load";
 
-const TableCoin = (props) => {
-  let priceOneDay;
-  const price = parseFloat(props.coin.current_price);
-  const symbol = props.coin.symbol.toUpperCase();
-  const marketCap = formatNumber(props.coin.market_cap);
-  //13-25: small change numbers should be fixed to only 5 decimals. more is usually irrelevant. $ should also appear after the + or - sign
-  if (Math.abs(props.coin.price_change_24h) < 0.001) {
-    priceOneDay = `${
-      props.coin.price_change_24h < 0
-        ? "-$" + props.coin.price_change_24h.toFixed(5) * -1
-        : "+$" + props.coin.price_change_24h.toFixed(5)
-    }`;
-  } else {
-    priceOneDay =
-      props.coin.price_change_24h > 0
-        ? `+$${parseFloat(props.coin.price_change_24h).toFixed(5)}`
-        : `-$${parseFloat(props.coin.price_change_24h).toFixed(5) * -1}`;
+const getNumber = (value) =>
+  typeof value === "number" ? value : Number.parseFloat(value);
+
+const formatCurrencyChange = (value) => {
+  const numericValue = getNumber(value);
+
+  if (!Number.isFinite(numericValue) || numericValue === 0) {
+    return "$0.00000";
   }
+
+  const absoluteValue = Math.abs(numericValue);
+  const prefix = numericValue > 0 ? "+$" : "-$";
+
+  return `${prefix}${absoluteValue.toFixed(5)}`;
+};
+
+const formatPercentageChange = (value) => {
+  const numericValue = getNumber(value);
+
+  if (!Number.isFinite(numericValue)) {
+    return "N/A";
+  }
+
+  const precision = Math.abs(numericValue) < 0.001 ? 10 : 3;
+  return numericValue.toFixed(precision);
+};
+
+const TableCoin = (props) => {
+  const price = getNumber(props.coin.current_price);
+  const symbol = props.coin.symbol?.toUpperCase() ?? "";
+  const marketCap = formatNumber(props.coin.market_cap);
+  const priceOneDay = formatCurrencyChange(props.coin.price_change_24h);
   const lastUpdatedDate = new Date(props.coin.last_updated);
-  const hours = lastUpdatedDate.getUTCHours().toString().padStart(2, "0");
-  const minutes = lastUpdatedDate.getUTCMinutes().toString().padStart(2, "0");
-  const seconds = lastUpdatedDate.getUTCSeconds().toString().padStart(2, "0");
+  const hasValidDate = !Number.isNaN(lastUpdatedDate.getTime());
+  const hours = hasValidDate
+    ? lastUpdatedDate.getUTCHours().toString().padStart(2, "0")
+    : "--";
+  const minutes = hasValidDate
+    ? lastUpdatedDate.getUTCMinutes().toString().padStart(2, "0")
+    : "--";
+  const seconds = hasValidDate
+    ? lastUpdatedDate.getUTCSeconds().toString().padStart(2, "0")
+    : "--";
+  const priceData = Array.isArray(props.coin.sparkline_in_7d?.price)
+    ? props.coin.sparkline_in_7d.price.filter((item) => Number.isFinite(item))
+    : [];
   const negative =
-    props.coin.sparkline_in_7d.price[0] >
-    props.coin.sparkline_in_7d.price[
-      props.coin.sparkline_in_7d.price.length - 1
-    ];
+    priceData.length > 1 ? priceData[0] > priceData[priceData.length - 1] : false;
 
   const image = props.coin.image;
-
-  const priceData = props.coin.sparkline_in_7d.price;
-  const priceChangePercentage = parseFloat(
+  const priceChangePercentage = formatPercentageChange(
     props.coin.price_change_percentage_24h
   );
-
-  if (Math.abs(priceChangePercentage) < 0.001) {
-    priceChangePercentage.toFixed(10);
-  } else {
-    priceChangePercentage.toPrecision(3);
-  }
 
   return (
     <div className={styles.container}>
@@ -56,8 +69,12 @@ const TableCoin = (props) => {
           <div>{symbol}</div>
         </div>
       </div>
-      <div>${price}</div>
-      <div>{priceChangePercentage}%</div>
+      <div>{Number.isFinite(price) ? `$${price}` : "N/A"}</div>
+      <div>
+        {priceChangePercentage === "N/A"
+          ? priceChangePercentage
+          : `${priceChangePercentage}%`}
+      </div>
       <div>{priceOneDay}</div>
       <div>${marketCap}</div>
       <div>{`${hours}:${minutes}:${seconds}`}</div>
@@ -87,9 +104,15 @@ const TableCoin = (props) => {
 export default TableCoin;
 //this function formats the number so we do not have numbers with digits like 12 or even more than 15
 export function formatNumber(number) {
+  const numericValue = getNumber(number);
+
+  if (!Number.isFinite(numericValue) || numericValue === 0) {
+    return "0.0";
+  }
+
   const abbreviations = ["", "K", "M", "B", "T"];
-  const tier = (Math.log10(Math.abs(number)) / 3) | 0;
-  const scaledNumber = number / Math.pow(1000, tier);
+  const tier = (Math.log10(Math.abs(numericValue)) / 3) | 0;
+  const scaledNumber = numericValue / Math.pow(1000, tier);
   return scaledNumber.toFixed(1) + " " + abbreviations[tier];
 }
 //This component is responsible for showcasing every Coin that we fetch. It has minimalistic tweaks to show the price in a suitable way.
