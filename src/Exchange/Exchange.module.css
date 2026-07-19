@@ -1,37 +1,18 @@
-@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:ital@1&family=PT+Serif&display=swap');
-
-.container {
-    width: 100%;
-    min-height: 100vh;
-    display: grid;
-    grid-template-rows: auto auto;
-    align-content: start;
-    background: radial-gradient(circle at 52.1% -29.6%, rgb(144, 17, 105) 0%, rgb(51, 0, 131) 100.2%);
-    background-position: center;
-    background-size: cover;
-    font-family: 'PT Serif', serif;
+.page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 80% 0, rgba(46, 155, 124, 0.09), transparent 32rem),
+    var(--ink);
 }
 
-.details {
-    width: 100%;
-    display: grid;
-    grid-template-rows: auto auto;
-    align-content: start;
-    gap: 1.5rem;
-    padding: 3rem 1.25rem 1.5rem;
-    box-sizing: border-box;
+.main {
+  width: min(1480px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: clamp(52px, 6vw, 88px) 0 80px;
+  display: grid;
+  gap: 44px;
 }
 
-@media (max-width: 900px) {
-    .details {
-        padding-top: 2.5rem;
-        gap: 1.25rem;
-    }
-}
-
-@media (max-width: 600px) {
-    .details {
-        padding: 2.15rem 0.75rem 1rem;
-        gap: 1rem;
-    }
+@media (max-width: 760px) {
+  .main { width: min(100% - 24px, 1480px); padding: 42px 0 56px; gap: 34px; }
 }

@@ -1,30 +1,12 @@
-.container {
-    width: 100%;
-    height: 100%;
-    min-height: 100vh;
-    display: grid;
-    grid-template-rows: 10% 90%;
-    background: radial-gradient(circle at 52.1% -29.6%, rgb(144, 17, 105) 0%, rgb(51, 0, 131) 100.2%);
-    background-position: center;
-    background-size: cover;
-    
-
-
-}
-
-
-.coinDetails {
-    width: 95%;
-    justify-self: center;
-    height: 100%;
-    display: grid;
-    grid-template-columns: 70% 30%;
-    gap: 25px;
-
-}
-
-.converter {
-
-    width: 100%;
-    height: 100%;
-}
+.page { min-height: 100vh; background: radial-gradient(circle at 70% 0, rgba(53, 178, 140, 0.09), transparent 30rem), var(--ink); }
+.main { width: min(1480px, calc(100% - 48px)); margin: 0 auto; padding: 30px 0 80px; }
+.breadcrumb { margin-bottom: 26px; display: flex; align-items: center; gap: 10px; color: var(--muted); font-family: var(--mono); font-size: 9px; letter-spacing: .08em; text-transform: uppercase; }
+.breadcrumb a { text-decoration: none; }
+.breadcrumb a:hover { color: var(--mint); }
+.layout { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(330px, .68fr); gap: 16px; align-items: start; }
+.missing { min-height: 60vh; display: grid; place-content: center; justify-items: start; }
+.missing > span { color: var(--danger); font-family: var(--mono); font-size: 9px; text-transform: uppercase; }
+.missing h1 { margin: 16px 0 30px; font-family: var(--display); font-size: clamp(38px, 6vw, 74px); }
+.missing a { color: var(--mint); }
+@media (max-width: 1020px) { .layout { grid-template-columns: 1fr; } }
+@media (max-width: 760px) { .main { width: min(100% - 24px, 1480px); padding-bottom: 54px; } }

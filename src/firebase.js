@@ -10,6 +10,7 @@ import {
   onValue,
   update,
   push,
+  runTransaction,
 } from "firebase/database";
 const firebaseConfig = {
   apiKey: "AIzaSyCn2O0Ps8PfRkVMWxzOtPPTJTzf4BivWOM",
@@ -187,128 +188,72 @@ export const auth = getAuth(app);
 
 // Async function to buy a coin and update user data accordingly
 export const buyCoin = async (transactionDetail) => {
-  const db = getDatabase();
+  const userId = transactionDetail?.userLogged;
+  const totalCost = Number(transactionDetail?.totalSum);
+  const coinAmount = Number(transactionDetail?.coinAmount);
 
-  // Fetch the user's financial information from the database
-  const userMoneyRef = ref(
-    db,
-    `users/${transactionDetail.userLogged}/userFinanceDetails/money`
+  if (
+    !hasValidUserId(userId) ||
+    !Number.isFinite(totalCost) ||
+    totalCost <= 0 ||
+    !Number.isFinite(coinAmount) ||
+    coinAmount <= 0
+  ) {
+    return false;
+  }
+
+  const financeRef = ref(
+    getDatabase(app),
+    `users/${userId}/userFinanceDetails`
   );
-  const userInvestmentsRef = ref(
-    db,
-    `users/${transactionDetail.userLogged}/userFinanceDetails/investments`
-  );
-  const userFlowRef = ref(
-    db,
-    `users/${transactionDetail.userLogged}/userFinanceDetails/totalFlow`
-  );
+  const newCoin = {
+    coinId: transactionDetail.coinID,
+    coinAmount,
+    coinBuyPrice: Number(transactionDetail.coinBuyPrice) || 0,
+    coinSymbol: transactionDetail.coinSymbol || "",
+    coinImage: transactionDetail.coinImage || "",
+    coinName: transactionDetail.coinName || "Unknown asset",
+    totalSum: totalCost,
+    coinLastUpdate: transactionDetail.coinLastUpdate || "",
+    timeOfBuy: transactionDetail.timeOfBuy || Date.now(),
+  };
 
-  // Get the current money value of the user
-  const userMoneySnapshot = await get(userMoneyRef);
-  const userMoney = userMoneySnapshot.val();
+  try {
+    const result = await runTransaction(financeRef, (currentValue) => {
+      const finance = normalizeUserFinanceDetails(currentValue);
+      const money = Number(finance.money) || 0;
+      if (money < totalCost) return;
 
-  // Calculate the total cost of the transaction
-  const totalCost = parseFloat(transactionDetail.totalSum);
-
-  // Check if the user has enough money for the transaction
-  if (userMoney >= totalCost) {
-    // Create a new coin object containing transaction details
-    const newCoin = {
-      coinId: transactionDetail.coinID,
-      coinAmount: parseFloat(transactionDetail.coinAmount),
-      coinBuyPrice: transactionDetail.coinBuyPrice,
-      coinSymbol: transactionDetail.coinSymbol,
-      coinImage: transactionDetail.coinImage,
-      coinName: transactionDetail.coinName,
-      totalSum: transactionDetail.totalSum,
-      coinLastUpdate: transactionDetail.coinLastUpdate,
-      timeOfBuy: transactionDetail.timeOfBuy,
-    };
-
-    // References to user's coins and transactions in the database
-    const coinsRef = child(
-      ref(db),
-      `users/${transactionDetail.userLogged}/userFinanceDetails/coins`
-    );
-    const transactionsRef = child(
-      ref(db),
-      `users/${transactionDetail.userLogged}/userFinanceDetails/transactions`
-    );
-
-    // Fetch user's investments and update them
-    const userInvestmentsSnapshot = await get(userInvestmentsRef);
-    const userInvestments = userInvestmentsSnapshot.val();
-    const updatedInvestments = userInvestments + totalCost;
-    await set(userInvestmentsRef, updatedInvestments);
-
-    // Fetch user's total flow and update it
-    const userFlowSnapshot = await get(userFlowRef);
-    const userFlow = userFlowSnapshot.val();
-    const updatedFlow = userFlow + totalCost;
-    await set(userFlowRef, updatedFlow);
-
-    try {
-      // Fetch the current coins array from the database
-      const coinsSnapshot = await get(coinsRef);
-      let currentCoins = coinsSnapshot.val();
-
-      // If currentCoins is not an array or is undefined, initialize it as an empty array
-      if (!Array.isArray(currentCoins)) {
-        currentCoins = [];
-      }
-
-      // Check if the new coin already exists in the user's coins
-      const existingCoinIndex = currentCoins.findIndex(
+      const coins = [...finance.coins];
+      const existingIndex = coins.findIndex(
         (item) => item.coinId === newCoin.coinId
       );
 
-      if (existingCoinIndex !== -1) {
-        // Update the existing coin's information
-        currentCoins[existingCoinIndex].coinAmount += newCoin.coinAmount;
-        currentCoins[existingCoinIndex].totalSum =
-          parseFloat(currentCoins[existingCoinIndex].totalSum) +
-          newCoin.totalSum;
-        console.log(
-          "coin updated so ",
-          currentCoins[existingCoinIndex].totalSum,
-          newCoin.totalSum
-        );
+      if (existingIndex >= 0) {
+        coins[existingIndex] = {
+          ...coins[existingIndex],
+          coinAmount: (Number(coins[existingIndex].coinAmount) || 0) + coinAmount,
+          totalSum: (Number(coins[existingIndex].totalSum) || 0) + totalCost,
+          coinBuyPrice: newCoin.coinBuyPrice,
+          coinLastUpdate: newCoin.coinLastUpdate,
+        };
       } else {
-        // Add the new coin to the user's coins array
-        currentCoins.push(newCoin);
-        console.log("Coin added:", newCoin);
+        coins.push(newCoin);
       }
 
-      // Write the updated coins array back to the database
-      await set(coinsRef, currentCoins);
+      return {
+        ...finance,
+        coins,
+        transactions: [...finance.transactions, newCoin],
+        money: money - totalCost,
+        investments: (Number(finance.investments) || 0) + totalCost,
+        totalFlow: (Number(finance.totalFlow) || 0) + totalCost,
+      };
+    });
 
-      // Similarly, update the transactions array
-      const transactionsSnapshot = await get(transactionsRef);
-      let currentTransactions = transactionsSnapshot.val();
-
-      // If currentTransactions is not an array or is undefined, initialize it as an empty array
-      if (!Array.isArray(currentTransactions)) {
-        currentTransactions = [];
-      }
-
-      // Add the new transaction to the user's transactions array
-      currentTransactions.push(newCoin);
-
-      // Write the updated transactions array back to the database
-      await set(transactionsRef, currentTransactions);
-
-      // Deduct the transaction cost from the user's money
-      const updatedMoney = userMoney - totalCost;
-      await set(userMoneyRef, updatedMoney);
-
-      console.log("Coin added successfully. Money deducted.");
-    } catch (error) {
-      console.error("Error adding coin:", error);
-    }
-    // Return true to indicate successful transaction
-    return true;
-  } else {
-    // Return false if the user doesn't have enough money
+    return result.committed;
+  } catch (error) {
+    console.error("Error completing coin purchase:", error);
     return false;
   }
 };
@@ -431,51 +376,79 @@ export const getCoinsArrayFromFirebase = async (userLogged) => {
 
 // Async function to create wallet and cards folders and add card information
 export const createWalletAndCardsFolders = async (userLogged, cardInfo) => {
-  const db = getDatabase();
+  if (!hasValidUserId(userLogged) || !cardInfo?.cardNum) {
+    throw new Error("A valid user and card are required.");
+  }
 
-  const walletRef = ref(db, `users/${userLogged}/userFinanceDetails/wallet`);
+  const db = getDatabase(app);
   const cardsRef = ref(
     db,
     `users/${userLogged}/userFinanceDetails/wallet/cards`
   );
 
   try {
-    // Check if the wallet folder exists
-    const walletSnapshot = await get(walletRef);
-    if (!walletSnapshot.exists()) {
-      // Create the wallet folder if it doesn't exist
-      await set(walletRef, true);
-    }
-
-    // Check if the cards folder exists
-    const cardsSnapshot = await get(cardsRef);
-    if (!cardsSnapshot.exists()) {
-      // Create the cards folder if it doesn't exist
-      await set(cardsRef, true);
-    }
-
-    // Fetch the existing card data and check if the card number already exists
     const cardsData = await get(cardsRef);
     const cardsArray = Object.values(cardsData.val() || {});
-    const cardNumberExists = cardsArray.some((card) => {
-      console.log(card, cardInfo);
-      return card.cardNum === cardInfo.cardNum;
-    });
+    const cardNumberExists = cardsArray.some(
+      (card) => card?.cardNum === cardInfo.cardNum
+    );
 
     if (cardNumberExists) {
-      console.log("Card number already exists in the 'cards' folder.");
-      return;
+      throw new Error("This card is already connected.");
     }
 
-    // Push the new card information into the 'cards' folder
     const newCardRef = push(cardsRef);
     await set(newCardRef, cardInfo);
-
-    console.log(
-      "Wallet and cards folders created, card info added successfully."
-    );
+    return true;
   } catch (error) {
     console.error("Error creating wallet and cards folders:", error);
+    throw error;
+  }
+};
+
+export const fundWallet = async (userLogged, amount, cardNumber) => {
+  const numericAmount = Number(amount);
+  if (
+    !hasValidUserId(userLogged) ||
+    !Number.isFinite(numericAmount) ||
+    numericAmount <= 0 ||
+    !cardNumber
+  ) {
+    return false;
+  }
+
+  const financeRef = ref(
+    getDatabase(app),
+    `users/${userLogged}/userFinanceDetails`
+  );
+
+  try {
+    const result = await runTransaction(financeRef, (currentValue) => {
+      const finance = normalizeUserFinanceDetails(currentValue);
+      const cards = { ...(finance.wallet?.cards || {}) };
+      const selectedKey = Object.keys(cards).find(
+        (key) => cards[key]?.cardNum === cardNumber
+      );
+      if (!selectedKey) return;
+
+      cards[selectedKey] = {
+        ...cards[selectedKey],
+        totalSum: (Number(cards[selectedKey].totalSum) || 0) + numericAmount,
+      };
+
+      return {
+        ...finance,
+        wallet: { ...finance.wallet, cards },
+        money: (Number(finance.money) || 0) + numericAmount,
+        deposits: (Number(finance.deposits) || 0) + numericAmount,
+        totalFlow: (Number(finance.totalFlow) || 0) + numericAmount,
+      };
+    });
+
+    return result.committed;
+  } catch (error) {
+    console.error("Error funding wallet:", error);
+    return false;
   }
 };
 
@@ -794,82 +767,73 @@ export const setupMoneyListener = (userLogged, onMoneyChange) => {
 
 // Async function to sell a coin and update user's coin and transaction data
 export const sellCoin = async (transactionDetail) => {
-  const db = getDatabase();
+  const userId = transactionDetail?.userLogged;
+  const sellAmount = Number(transactionDetail?.coinAmount);
+  const proceeds = Number(transactionDetail?.totalSum);
 
-  // References to user's coins and transactions in the database
-  const coinsRef = child(
-    ref(db),
-    `users/${transactionDetail.userLogged}/userFinanceDetails/coins`
-  );
-  const transactionsRef = child(
-    ref(db),
-    `users/${transactionDetail.userLogged}/userFinanceDetails/transactions`
+  if (
+    !hasValidUserId(userId) ||
+    !Number.isFinite(sellAmount) ||
+    sellAmount <= 0 ||
+    !Number.isFinite(proceeds) ||
+    proceeds < 0
+  ) {
+    return false;
+  }
+
+  const financeRef = ref(
+    getDatabase(app),
+    `users/${userId}/userFinanceDetails`
   );
 
   try {
-    // Fetch the user's coins data
-    const coinsSnapshot = await get(coinsRef);
-    const currentCoins = coinsSnapshot.val();
+    const result = await runTransaction(financeRef, (currentValue) => {
+      const finance = normalizeUserFinanceDetails(currentValue);
+      const coins = [...finance.coins];
+      const existingIndex = coins.findIndex(
+        (item) =>
+          item.coinId === transactionDetail.coinID ||
+          item.coinName === transactionDetail.coinName
+      );
+      if (existingIndex < 0) return;
 
-    // Find the index of the existing coin based on coinName
-    const existingCoinIndex = currentCoins.findIndex(
-      (item) => item.coinName === transactionDetail.coinName
-    );
+      const currentCoin = coins[existingIndex];
+      const ownedAmount = Number(currentCoin.coinAmount) || 0;
+      if (sellAmount > ownedAmount) return;
 
-    if (existingCoinIndex !== -1) {
-      // Update coin data
-      const updatedCoinAmount =
-        currentCoins[existingCoinIndex].coinAmount -
-        parseFloat(transactionDetail.coinAmount);
-      const updatedCoinSum =
-        currentCoins[existingCoinIndex].totalSum -
-        parseFloat(transactionDetail.totalSum);
-
-      // If the coin amount reaches zero, remove the coin from the array
-      if (updatedCoinAmount <= 0) {
-        currentCoins.splice(existingCoinIndex, 1);
-        console.log("Coin removed:", transactionDetail.coinName);
+      const remainingAmount = ownedAmount - sellAmount;
+      if (remainingAmount <= 0) {
+        coins.splice(existingIndex, 1);
       } else {
-        // Update coin details in the coins array
-        currentCoins[existingCoinIndex].coinAmount = updatedCoinAmount;
-        currentCoins[existingCoinIndex].totalSum = updatedCoinSum;
-        console.log("Coin updated:", currentCoins[existingCoinIndex].coinName);
+        coins[existingIndex] = {
+          ...currentCoin,
+          coinAmount: remainingAmount,
+          totalSum:
+            (Number(currentCoin.totalSum) || 0) *
+            (remainingAmount / ownedAmount),
+        };
       }
 
-      // Update the coins array in the database
-      await set(coinsRef, currentCoins);
-
-      // Create a new transaction for the sale
       const newTransaction = {
         coinId: transactionDetail.coinID,
-        coinAmount: parseFloat(transactionDetail.coinAmount),
-        coinSymbol: transactionDetail.coinSymbol,
-        coinImage: transactionDetail.coinImage,
-        coinName: transactionDetail.coinName,
-        totalSum: transactionDetail.totalSum,
-        timeOfSell: transactionDetail.timeOfSell,
+        coinAmount: sellAmount,
+        coinSymbol: transactionDetail.coinSymbol || currentCoin.coinSymbol || "",
+        coinImage: transactionDetail.coinImage || currentCoin.coinImage || "",
+        coinName: transactionDetail.coinName || currentCoin.coinName,
+        totalSum: proceeds,
+        timeOfSell: transactionDetail.timeOfSell || Date.now(),
       };
 
-      // Fetch the current transactions array from the database
-      const transactionsSnapshot = await get(transactionsRef);
-      let currentTransactions = transactionsSnapshot.val();
+      return {
+        ...finance,
+        coins,
+        transactions: [...finance.transactions, newTransaction],
+        money: (Number(finance.money) || 0) + proceeds,
+        totalFlow: (Number(finance.totalFlow) || 0) + proceeds,
+      };
+    });
 
-      // If currentTransactions is not an array or is undefined, initialize it as an empty array
-      if (!Array.isArray(currentTransactions)) {
-        currentTransactions = [];
-      }
-
-      // Push the new transaction to the transactions array
-      currentTransactions.push(newTransaction);
-
-      // Write the updated transactions array back to the database
-      await set(transactionsRef, currentTransactions);
-
-      console.log("Coin sold successfully.");
-      return true;
-    } else {
-      return false;
-    }
+    return result.committed;
   } catch (error) {
     console.error("Error selling coin:", error);
     return false;

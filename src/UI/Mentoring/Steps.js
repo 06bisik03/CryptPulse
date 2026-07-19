@@ -12,7 +12,7 @@ const Steps = () => {
       </div>
       <div className={styles.step}>
         <h4>Browse Mentor Profiles</h4>
-        <i class="fa-solid fa-lock-open"></i>
+        <i className="fa-solid fa-lock-open"></i>
         <div className={styles.expl}>
           Users are given the opportunity to explore mentor profiles and
           expertise to find the right match for their crypto needs.
@@ -20,7 +20,7 @@ const Steps = () => {
       </div>
       <div className={styles.step}>
         <h4>Facilitate Mentorship Sessions</h4>
-        <i class="fa-solid fa-arrow-pointer"></i>
+        <i className="fa-solid fa-arrow-pointer"></i>
         <div className={styles.expl}>
           We provide a user-friendly booking system for users to schedule
           mentorship sessions with their chosen mentors.
@@ -29,7 +29,7 @@ const Steps = () => {
 
       <div className={styles.step}>
         <h4>Collect User Feedback</h4>
-        <i class="fa-solid fa-comment"></i>
+        <i className="fa-solid fa-comment"></i>
         <div className={styles.expl}>
           We gather user feedback after mentorship sessions ensure a valuable
           experience for all users.

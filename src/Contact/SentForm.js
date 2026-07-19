@@ -1,22 +1,14 @@
-import styles from "./SentForm.module.css";
 import { Link } from "react-router-dom";
-const SentForm = () => {
-  return (
-    <div className={styles.container}>
-      <div className={styles.message}>
-        <h1>THANK YOU</h1>
-        <div className={styles.def}>
-          <text>
-            Your message has been forwarded to the CryptPulse family. We will
-            get back to your as soon as possible!
-          </text>
-        </div>
-        <Link to="/" className={styles.btn}>
-          Back to Homepage
-        </Link>
-      </div>
-    </div>
-  );
-};
+import styles from "./SentForm.module.css";
+
+const SentForm = ({ onReset }) => (
+  <main className={styles.main}>
+    <div className={styles.icon}>✓</div>
+    <span>Request received</span>
+    <h1>Your message is with the right team.</h1>
+    <p>We have recorded your request. A member of support will respond through your account email.</p>
+    <div className={styles.actions}><button type="button" onClick={onReset}>Send another</button><Link to="/exchange">Return to markets <span>→</span></Link></div>
+  </main>
+);
+
 export default SentForm;
-//this component is responsible for informing the user of the submission of the form.

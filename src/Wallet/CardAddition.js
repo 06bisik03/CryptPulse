@@ -1,194 +1,70 @@
+import { useState } from "react";
 import styles from "./CardAddition.module.css";
-import { useRef, useState, useEffect } from "react";
 import { createWalletAndCardsFolders } from "../firebase";
-import LazyLoad from "react-lazy-load";
 
-//ALl options that exists for a card in CryptoPulse are the following:
-const optionsArray = [
-  { value: "VISA", label: "VISA" },
-  { value: "Mastercard", label: "Mastercard" },
-  { value: "AmericanExpress", label: "American Express" },
-  { value: "Square", label: "Square(VISA)" },
-  { value: "Paypal", label: "PayPal(Mastercard)" },
-];
-const CardAddition = (props) => {
-  const [cardNum, setCardNum] = useState("");
-  const [monthValid, setMonthValid] = useState(true);
+const issuers = ["VISA", "Mastercard", "AmericanExpress", "Square", "Paypal"];
 
-  const [yearValid, setYearValid] = useState(true);
-  const [imgSource, setImgSource] = useState("/images/card.png");
-  const [selectedOptionIndex, setSelectedOptionIndex] = useState(-1);
-  // Update card image source based on card number when it changes. Every Card has its own initial IIN
-  useEffect(() => {
-    if (cardNum) {
-      const imgSource =
-        cardNum.charAt(0) === "4"
-          ? "/images/VisCard.png"
-          : cardNum.slice(0, 2) >= "34" && cardNum.slice(0, 2) <= "37"
-          ? "/images/AmeCard.jpeg"
-          : cardNum.slice(0, 2) >= "51" && cardNum.slice(0, 2) <= "55"
-          ? "/images/MasCard.png"
-          : cardNum.slice(0, 5) >= "2221" && cardNum.slice(0, 5) <= "2720"
-          ? "/images/MasCard.png"
-          : "/images/card.png";
-      setImgSource(imgSource);
-    } else {
-      setImgSource("/images/card.png");
+const CardAddition = ({ cancelAddition }) => {
+  const [form, setForm] = useState({ cardNum: "", holderName: "", cvc: "", month: "", year: "", bankName: "", type: "" });
+  const [error, setError] = useState("");
+  const [pending, setPending] = useState(false);
+
+  const update = (field, value) => setForm((current) => ({ ...current, [field]: value }));
+
+  const submitHandler = async (event) => {
+    event.preventDefault();
+    setError("");
+    const now = new Date();
+    const cardNumber = form.cardNum.replace(/\s/g, "");
+    const month = Number(form.month);
+    const year = Number(form.year);
+    if (!/^\d{16}$/.test(cardNumber)) return setError("Enter a valid 16-digit card number.");
+    if (!/^\d{3,4}$/.test(form.cvc)) return setError("Enter a valid security code.");
+    if (!form.holderName.trim() || !form.bankName.trim() || !form.type) return setError("Complete every card field.");
+    if (month < 1 || month > 12 || year < now.getFullYear() || year > 2050 || (year === now.getFullYear() && month <= now.getMonth() + 1)) return setError("Enter a valid future expiry date.");
+
+    setPending(true);
+    try {
+      await createWalletAndCardsFolders(localStorage.getItem("userLogged"), {
+        cardNum: cardNumber,
+        holderName: form.holderName.trim(),
+        expDate: `${String(month).padStart(2, "0")}/${year}`,
+        bankName: form.bankName.trim(),
+        type: form.type,
+        introductionDate: Date.now(),
+        totalSum: 0,
+      });
+      cancelAddition();
+    } catch {
+      setError("The card could not be added. Verify your connection and try again.");
+      setPending(false);
     }
-  }, [cardNum]);
-
-  const formRefs = {
-    cardNum: useRef(),
-    name: useRef(),
-    month: useRef(),
-    year: useRef(),
-    bankName: useRef(),
-    type: useRef(),
-  };
-  const handleOptionSelection = (event) => {
-    const selectedIndex = event.target.value;
-    setSelectedOptionIndex(selectedIndex);
-  };
-  const submitHandler = (e) => {
-    e.preventDefault();
-    const time = new Date();
-
-    const cardInfo = Object.values(formRefs).map((item) => item.current.value);
-    //57-68: Validates the date.
-    if (parseFloat(cardInfo[2]) > 12 || parseFloat(cardInfo[2]) < 1) {
-      setMonthValid(false);
-      return;
-    } else {
-      //If year is current year, expiration month should be later than the current month
-      if (parseFloat(cardInfo[3]) === time.getFullYear()) {
-        setMonthValid(parseFloat(cardInfo[2]) > time.getMonth() + 1);
-        return;
-      }
-      setMonthValid(true);
-    }
-    //If year is earlier than current year or bigger than 2050, its invalid
-    if (
-      parseFloat(cardInfo[3]) < time.getFullYear() ||
-      parseFloat(cardInfo[3]) > 2050
-    ) {
-      setYearValid(false);
-      return;
-    } else {
-      setYearValid(true);
-    }
-    //make a new card object to pass to firebase using the form data
-    const newCard = {
-      cardNum: cardInfo[0],
-      holderName: cardInfo[1],
-      expDate: cardInfo[2] + "/" + cardInfo[3],
-      bankName: cardInfo[4],
-      type:
-        selectedOptionIndex >= 0 && selectedOptionIndex < optionsArray.length
-          ? optionsArray[selectedOptionIndex].value
-          : "", // Use empty string as default
-      introductionDate: time.getTime(),
-      totalSum: 0,
-    };
-    createWalletAndCardsFolders(localStorage.getItem("userLogged"), newCard);
-    props.cancelAddition();
   };
 
   return (
-    <div className={styles.container}>
-      <div className={styles.addCard}>
-        <div className={styles.title}>Add New Credit/Debit Card</div>
-        <div className={styles.imgContainer}>
-          <LazyLoad>
-            <img src={imgSource} alt="x" />
-          </LazyLoad>
+    <div className={styles.backdrop} role="dialog" aria-modal="true" aria-labelledby="card-title">
+      <form className={styles.modal} onSubmit={submitHandler}>
+        <div className={styles.heading}><div><span>Funding method</span><h2 id="card-title">Connect a card</h2></div><button type="button" onClick={cancelAddition} aria-label="Close">×</button></div>
+        <div className={styles.preview}>
+          <div className={styles.chip} /><span>{form.type || "CRYPTPULSE"}</span>
+          <strong>{form.cardNum ? form.cardNum.replace(/(\d{4})(?=\d)/g, "$1 ") : "•••• •••• •••• ••••"}</strong>
+          <div><small>Cardholder</small><b>{form.holderName || "YOUR NAME"}</b></div>
+          <div><small>Expires</small><b>{form.month || "MM"}/{form.year || "YYYY"}</b></div>
         </div>
-
-        <form className={styles.data} id="cardForm" onSubmit={submitHandler}>
-          <div className={styles.firstInputs}>
-            <div>
-              <input
-                placeholder="0123456789012345"
-                type="text"
-                maxLength={16}
-                minLength={16}
-                ref={formRefs.cardNum}
-                value={cardNum}
-                onChange={(e) => setCardNum(e.target.value)}
-              />
-            </div>
-            <div>
-              <input
-                placeholder="Cardholder Name"
-                type="text"
-                ref={formRefs.name}
-                required
-              />
-            </div>
-            <div>
-              <input
-                placeholder="CVC"
-                type="number"
-                minLength={3}
-                maxLength={3}
-              />
-              <input
-                placeholder="04"
-                type="text"
-                style={{
-                  backgroundColor: monthValid ? "white" : "red",
-                }}
-                minLength={2}
-                maxLength={2}
-                ref={formRefs.month}
-              />
-              <input
-                placeholder="2024"
-                type="text"
-                minLength={4}
-                maxLength={4}
-                style={{
-                  backgroundColor: yearValid ? "white" : "red",
-                }}
-                ref={formRefs.year}
-              />
-            </div>
-          </div>
-          {/**/}
-          <div className={styles.secondInputs}>
-            <div>
-              <div>Bank Name</div>
-              <input placeholder="Bank Name" ref={formRefs.bankName} />
-            </div>
-            <div>
-              <div>Card Issuer</div>
-              <select
-                ref={formRefs.type}
-                value={selectedOptionIndex}
-                onChange={handleOptionSelection}
-              >
-                <option value={-1} disabled>
-                  Please select an option
-                </option>
-                {optionsArray.map((option, index) => (
-                  <option key={index} value={index}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </form>
-        <div className={styles.btnHolder}>
-          <button className={styles.btn} onClick={() => props.cancelAddition()}>
-            Cancel
-          </button>
-          <button className={styles.btn} type="submit" form="cardForm">
-            Save
-          </button>
+        <div className={styles.fields}>
+          <label className={styles.full}><span>Card number</span><input inputMode="numeric" maxLength="16" value={form.cardNum} onChange={(event) => update("cardNum", event.target.value.replace(/\D/g, ""))} placeholder="0000000000000000" /></label>
+          <label className={styles.full}><span>Cardholder name</span><input value={form.holderName} onChange={(event) => update("holderName", event.target.value)} placeholder="Name as shown on card" /></label>
+          <label><span>Expiry month</span><input inputMode="numeric" maxLength="2" value={form.month} onChange={(event) => update("month", event.target.value.replace(/\D/g, ""))} placeholder="MM" /></label>
+          <label><span>Expiry year</span><input inputMode="numeric" maxLength="4" value={form.year} onChange={(event) => update("year", event.target.value.replace(/\D/g, ""))} placeholder="YYYY" /></label>
+          <label><span>Security code</span><input type="password" inputMode="numeric" maxLength="4" value={form.cvc} onChange={(event) => update("cvc", event.target.value.replace(/\D/g, ""))} placeholder="CVC" /></label>
+          <label><span>Bank name</span><input value={form.bankName} onChange={(event) => update("bankName", event.target.value)} placeholder="Issuing bank" /></label>
+          <label className={styles.full}><span>Card network</span><select value={form.type} onChange={(event) => update("type", event.target.value)}><option value="">Select network</option>{issuers.map((issuer) => <option value={issuer} key={issuer}>{issuer}</option>)}</select></label>
         </div>
-      </div>
+        {error && <div className={styles.error}>{error}</div>}
+        <div className={styles.actions}><button type="button" onClick={cancelAddition}>Cancel</button><button type="submit" disabled={pending}>{pending ? "Connecting…" : "Connect card"}</button></div>
+      </form>
     </div>
   );
 };
+
 export default CardAddition;
-//This component is responsible for adding a new credit card to the wallet of the user

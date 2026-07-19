@@ -1,142 +1,24 @@
-import Navbar from "../UI/Navbar";
 import styles from "./Choice.module.css";
-import { Link, useLocation } from "react-router-dom";
-import { useState } from "react";
-const Choice = (props) => {
-  const [typeForm, setTypeForm] = useState("");
 
-  const location = useLocation();
-  const formMode = new URLSearchParams(location.search).get("form");
+const copy = {
+  technical: { eyebrow: "Technical support", title: "Tell us what happened", topic: "Issue summary", message: "Steps, expected result, and what you saw" },
+  feedback: { eyebrow: "Product feedback", title: "Help shape CryptPulse", topic: "Area of the product", message: "Your suggestion or feedback" },
+  general: { eyebrow: "Member inquiry", title: "Ask us anything", topic: "Question topic", message: "How can our team help?" },
+};
+
+const Choice = ({ mode = "general", onCancel, submitHandler }) => {
+  const content = copy[mode] || copy.general;
   return (
-    <div className={styles.container}>
-      <Navbar />
-      {formMode === "ti" ? (
-        <TechnicalProblems
-          onCancel={props.onCancel}
-          submitHandler={props.submitHandler}
-        />
-      ) : formMode === "gq" ? (
-        <Questions
-          onCancel={props.onCancel}
-          submitHandler={props.submitHandler}
-        />
-      ) : (
-        <Feedback
-          setType={(e) => setTypeForm(e)}
-          typeForm={typeForm}
-          onCancel={props.onCancel}
-          submitHandler={props.submitHandler}
-        />
-      )}
-    </div>
+    <main className={styles.main}>
+      <div className={styles.intro}><span>{content.eyebrow}</span><h1>{content.title}</h1><p>Include enough context for the support team to respond without another round of questions.</p></div>
+      <form className={styles.form} onSubmit={submitHandler}>
+        <label><span>{content.topic}</span><input required placeholder="A short, specific title" /></label>
+        <label><span>{content.message}</span><textarea required rows="8" placeholder="Write your message here…" /></label>
+        <label><span>Priority</span><select defaultValue="standard"><option value="standard">Standard</option><option value="important">Important</option><option value="urgent">Urgent / access blocked</option></select></label>
+        <div className={styles.actions}><button type="button" onClick={onCancel}>Back</button><button type="submit">Send request <span>↗</span></button></div>
+      </form>
+    </main>
   );
 };
 
 export default Choice;
-
-const TechnicalProblems = (props) => {
-  return (
-    <div className={styles.formContainer}>
-      <h1>Technical Problems</h1>
-      <form className={styles.form} onSubmit={props.submitHandler}>
-        <input placeholder="Topic" required />
-        <textarea placeholder="Message" required />
-        <div className={styles.buttons}>
-          <button
-            className={`${styles.btn} ${styles.back}`}
-            onClick={props.onCancel}>
-            Back
-          </button>
-          <button className={styles.btn} type="submit">
-            Continue
-          </button>
-        </div>
-      </form>
-    </div>
-  );
-};
-
-const Feedback = (props) => {
-  return (
-    <div className={styles.formContainer}>
-      <h1>Feedback and Suggestions</h1>
-      <form className={styles.form} onSubmit={props.submitHandler}>
-        <div className={styles.dropdown}>
-          <button
-            className={styles.dropdownBtn}
-            aria-haspopup="menu"
-            type="button"
-            onClick={() => props.setType("")}>
-            <span>
-              {props.typeForm === "" ? "Please select" : props.typeForm}
-            </span>
-            <span className={styles.arrow}></span>
-          </button>
-          <ul className={styles.dropdownContent} role="menu">
-            <li style={{ "--delay": 1 }}>
-              <Link onClick={() => props.setType("Feedback")}>Feedback</Link>
-            </li>
-            <li style={{ "--delay": 2 }}>
-              <Link onClick={() => props.setType("Suggestion")}>
-                Suggestion
-              </Link>
-            </li>
-          </ul>
-        </div>
-        {props.typeForm === "Suggestion" ? (
-          <>
-            <textarea placeholder="Suggestion" required />
-            <div className={styles.buttons}>
-              <button
-                className={`${styles.btn} ${styles.back}`}
-                onClick={props.onCancel}>
-                Back
-              </button>
-              <button className={styles.btn} type="submit">
-                Submit
-              </button>
-            </div>
-          </>
-        ) : props.typeForm === "Feedback" ? (
-          <>
-            <textarea placeholder="Feedback" required />
-            <div className={styles.buttons}>
-              <button
-                className={`${styles.btn} ${styles.back}`}
-                onClick={props.onCancel}>
-                Back
-              </button>
-              <button className={styles.btn} type="submit">
-                Submit
-              </button>
-            </div>
-          </>
-        ) : null}
-      </form>
-    </div>
-  );
-};
-
-const Questions = (props) => {
-  return (
-    <div className={styles.formContainer}>
-      <h1>General Question</h1>
-      <form className={styles.form} onSubmit={props.submitHandler}>
-        <input placeholder="Topic" required />
-        <textarea placeholder="Question" required />
-        <div className={styles.buttons}>
-          <button
-            className={`${styles.btn} ${styles.back}`}
-            onClick={props.onCancel}>
-            Back
-          </button>
-          <button className={styles.btn} type="submit">
-            Submit
-          </button>
-        </div>
-      </form>
-    </div>
-  );
-};
-
-//this whole file is responsible for showcasing the appropriate form, for the chosen reason back in ContactPage. For every reason, a function exists.

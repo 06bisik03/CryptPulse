@@ -1,167 +1,41 @@
-.container {
-    width: 100%;
-    min-height: 4.8rem;
-    display: grid;
-    grid-template-columns: 1fr 3fr 3fr 2fr 2fr 2fr 2fr 3fr 1fr;
-    align-items: center;
-    gap: 1rem;
-    border-bottom: 1px solid rgb(197, 197, 197);
-    color: black;
-    padding: 0.75rem 1rem;
-    font-size: 0.95rem;
+.container { min-height: 76px; display: grid; grid-template-columns: 42px minmax(190px, 1.3fr) minmax(110px, .8fr) 90px minmax(120px, .85fr) minmax(120px, .85fr) minmax(130px, .9fr) 72px; align-items: center; gap: 18px; padding: 0 24px; border-bottom: 1px solid var(--line); transition: background 170ms ease; }
+.container:last-child { border-bottom: 0; }
+.container:hover { background: rgba(100, 251, 210, 0.03); }
+.rank { color: #53635d; font-family: var(--mono); font-size: 9px; }
+.asset { min-width: 0; display: flex; align-items: center; gap: 12px; text-decoration: none; }
+.asset img, .coinMark { width: 34px; height: 34px; flex: 0 0 auto; border-radius: 50%; }
+.asset img { object-fit: cover; }
+.coinMark { display: grid; place-items: center; border: 1px solid color-mix(in srgb, var(--coin), transparent 50%); background: color-mix(in srgb, var(--coin), transparent 90%); color: var(--coin); font-family: var(--mono); font-size: 11px; }
+.identity { min-width: 0; display: grid; gap: 4px; }
+.identity strong { overflow: hidden; font-size: 12px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.identity small { color: var(--muted); font-family: var(--mono); font-size: 8px; letter-spacing: 0.08em; }
+.price, .change, .cap, .volume { text-align: right; font-family: var(--mono); font-size: 10px; }
+.change { color: var(--mint); }
+.negative { color: var(--danger); }
+.cap, .volume { color: var(--muted-bright); }
+.chart { height: 44px; display: flex; align-items: center; }
+.action { display: grid; place-items: center; }
+.tradeBtn { width: 32px; height: 32px; display: grid; place-items: center; border: 1px solid var(--line-strong); border-radius: 50%; color: var(--muted-bright); font-size: 13px; text-decoration: none; transition: 180ms ease; }
+.tradeBtn:hover { border-color: var(--mint); background: var(--mint); color: var(--ink); box-shadow: 0 0 24px rgba(100, 251, 210, 0.2); transform: rotate(45deg); }
+
+@media (max-width: 1040px) {
+  .container { grid-template-columns: 36px minmax(175px, 1.25fr) minmax(105px, .8fr) 82px minmax(115px, .85fr) minmax(120px, .9fr) 68px; }
+  .volume { display: none; }
 }
 
-.container div:nth-child(1) {
-    justify-self: center;
+@media (max-width: 760px) {
+  .container { min-height: 72px; grid-template-columns: minmax(145px, 1fr) minmax(90px, .7fr) 76px 58px; gap: 10px; padding: 0 15px; }
+  .rank, .cap, .volume, .chart { display: none; }
+  .asset { grid-column: 1; }
+  .price { grid-column: 2; }
+  .change { grid-column: 3; }
+  .action { grid-column: 4; }
 }
 
-.container div:nth-child(n+3):nth-child(-n+7) {
-    justify-self: right;
-}
-
-.container div:nth-child(8) {
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-}
-
-.container div:nth-child(9) {
-    justify-self: center;
-}
-
-.container div {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.tradeBtn {
-    position: relative;
-    display: flex;
-    width: max-content;
-    padding: 4px 10px;
-    border-radius: 7px;
-    justify-content: center;
-    border: 1px solid rgb(61, 106, 255);
-    font-size: 12px;
-    text-transform: uppercase;
-    text-decoration: none;
-    background: transparent;
-    color: black;
-    overflow: hidden;
-    box-shadow: 0 0 0 0 transparent;
-    -webkit-transition: all 0.2s ease-in;
-    -moz-transition: all 0.2s ease-in;
-    transition: all 0.2s ease-in;
-}
-
-.tradeBtn:hover {
-    background: rgb(61, 106, 255);
-    box-shadow: 0 0 30px 5px rgba(0, 142, 236, 0.815);
-    -webkit-transition: all 0.2s ease-out;
-    -moz-transition: all 0.2s ease-out;
-    transition: all 0.2s ease-out;
-}
-
-.tradeBtn:hover::before {
-    -webkit-animation: sh02 0.5s 0s linear;
-    -moz-animation: sh02 0.5s 0s linear;
-    animation: sh02 0.5s 0s linear;
-}
-
-.tradeBtn::before {
-    content: '';
-    display: block;
-    width: 0px;
-    height: 86%;
-    position: absolute;
-    top: 7%;
-    left: 0%;
-    opacity: 0;
-    background: #fff;
-    box-shadow: 0 0 50px 30px #fff;
-    -webkit-transform: skewX(-20deg);
-    -moz-transform: skewX(-20deg);
-    -ms-transform: skewX(-20deg);
-    -o-transform: skewX(-20deg);
-    transform: skewX(-20deg);
-}
-
-@keyframes sh02 {
-    from {
-        opacity: 0;
-        left: 0%;
-    }
-
-    50% {
-        opacity: 1;
-    }
-
-    to {
-        opacity: 0;
-        left: 100%;
-    }
-}
-
-.tradeBtn:active {
-    box-shadow: 0 0 0 0 transparent;
-    -webkit-transition: box-shadow 0.2s ease-in;
-    -moz-transition: box-shadow 0.2s ease-in;
-    transition: box-shadow 0.2s ease-in;
-}
-
-.nameCoin {
-    width: 100%;
-    height: 100%;
-}
-
-.nameCoin img {
-    height: 35px;
-    margin-right: 10px;
-}
-
-.name {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.name div:nth-child(2) {
-    align-self: flex-start;
-}
-
-.graph {
-    width: 100%;
-    height: 100%;
-    max-width: 250px;
-}
-
-@media (max-width: 700px) {
-    .container {
-        min-height: 4.3rem;
-        gap: 0.8rem;
-        padding: 0.7rem 0.85rem;
-        font-size: 0.82rem;
-    }
-
-    .nameCoin img {
-        height: 28px;
-        margin-right: 8px;
-    }
-
-    .tradeBtn {
-        font-size: 11px;
-        padding: 3px 8px;
-    }
-}
-
-@media (max-width: 480px) {
-    .container {
-        font-size: 0.76rem;
-    }
-
-    .nameCoin img {
-        height: 24px;
-    }
+@media (max-width: 430px) {
+  .container { grid-template-columns: minmax(128px, 1fr) minmax(88px, .7fr) 50px; }
+  .change { display: none; }
+  .action { grid-column: 3; }
+  .asset img, .coinMark { width: 30px; height: 30px; }
+  .identity strong { font-size: 11px; }
 }

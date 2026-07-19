@@ -1,53 +1,11 @@
-.container {
-    width: 100%;
-    height: 100%;
-    min-height: 100vh;
-    display: grid;
-    grid-template-rows: 10% 20% 64%;
-    background-position: center;
-    background-size: cover;
-    gap: 3%;
-
-
-}
-
-.showGroups {
-    width: 100%;
-    height: 100%;
-
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 40px
-}
-
-.leftGroup {
-    width: 100%;
-    height: 100%;
-
-    display: grid;
-    grid-template-rows: 1fr 1fr;
-    gap: 40px;
-
-
-}
-
-.groupCase {
-    width: 92%;
-    height: 90%;
-    display: grid;
-    grid-template-rows: 7% 93%;
-    justify-self: center;
-    background-color: rgba(255, 255, 255, 0.725);
-    text-align: center;
-    padding-top: 10px;
-    
-
-}
-
-.coinShow {
-    width: 100%;
-    height: 100%;
-    display: grid;
-    padding: 0 30px;
-    padding-top: 15px;
-}
+.page { min-height: 100vh; background: radial-gradient(circle at 18% 8%, rgba(100,251,210,.08), transparent 28rem), var(--ink); }
+.main { width: min(1480px, calc(100% - 48px)); margin: 0 auto; padding: clamp(60px, 7vw, 100px) 0 90px; }
+.groups { margin-top: 32px; display: grid; grid-template-columns: repeat(2, 1fr); border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
+.group { min-width: 0; padding: 28px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); background: rgba(7,15,12,.55); }
+.groupHeader { min-height: 94px; display: flex; align-items: flex-start; gap: 18px; }
+.groupHeader > span { padding-top: 5px; color: var(--mint); font-family: var(--mono); font-size: 9px; }
+.groupHeader h2 { margin: 0 0 8px; font-family: var(--display); font-size: 29px; font-weight: 500; letter-spacing: -.04em; }
+.groupHeader p { margin: 0; color: var(--muted); font-size: 11px; }
+.coinList { border-top: 1px solid var(--line); }
+@media (max-width: 900px) { .groups { grid-template-columns: 1fr; } }
+@media (max-width: 760px) { .main { width: min(100% - 24px, 1480px); padding-top: 48px; } .group { padding: 20px 16px; } }

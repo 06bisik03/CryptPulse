@@ -64,5 +64,3 @@ export const countZerosAfterDecimal = (number) => {
   
   return zeroCount;
 }
-
-

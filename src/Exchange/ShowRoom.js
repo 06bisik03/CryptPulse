@@ -1,100 +1,51 @@
-import styles from "./ShowRoom.module.css";
+import { useEffect, useMemo } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import Navbar from "../UI/Navbar";
 import ShowRoomElement from "../UI/Exchange/ShowRoomElement";
 import Overall from "../UI/Exchange/Overall";
-import { useEffect,useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import styles from "./ShowRoom.module.css";
 import { fetcherGlobal, fetcherTrending, fetcherGeneral } from "../redux/Api";
-import LoadingScreen from "../LoadingScreen";
-import imgBack from '../Assets/contact.jpg';
-const ShowRoom = (props) => {
+
+const ShowRoom = () => {
   const dispatch = useDispatch();
-  const dataGeneral = useSelector((state) => state.api.generalCoins);
-  const dataTrending = useSelector((state) => state.api.trendingCoins);
-  const dataGlobal = useSelector((state) => state.api.globalData);
-  const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const coins = useSelector((state) => state.api.generalCoins);
+  const trending = useSelector((state) => state.api.trendingCoins);
+  const global = useSelector((state) => state.api.globalData?.data);
 
   useEffect(() => {
-    if (dataGeneral.length === 0) {
-      dispatch(fetcherGeneral(undefined, { reducerPath: "coins" }));
-    }
-    if (dataTrending.length === 0) {
-      dispatch(fetcherTrending(undefined, { reducerPath: "transactions" }));
-    }
-    if (dataGlobal.length === 0) {
-      dispatch(fetcherGlobal(undefined, { reducerPath: "api" }));
-    }
-    const img = new Image();
-    img.src = imgBack; 
-    img.onload = () => setIsImageLoaded(true);
-    console.log(img.src, isImageLoaded);
-  }, [dispatch, dataGeneral, isImageLoaded,dataGlobal, dataTrending]);
+    dispatch(fetcherGeneral());
+    dispatch(fetcherTrending());
+    dispatch(fetcherGlobal());
+  }, [dispatch]);
 
-  const losersSlice = dataGeneral.slice();
-  const gainersSlice = dataGeneral.slice();
-  const globalData = dataGlobal.data;
-  const topCoins = dataGeneral.slice(0, 5);
-  const trending = dataTrending.slice(0, 5);
-  const toplosers = losersSlice
-    .sort(
-      (a, b) => a.price_change_percentage_24h - b.price_change_percentage_24h
-    )
-    .slice(0, 5);
-  const topgainers = gainersSlice
-    .sort(
-      (a, b) => b.price_change_percentage_24h - a.price_change_percentage_24h
-    )
-    .slice(0, 5);
+  const groups = useMemo(() => [
+    { title: "Market leaders", caption: "Largest networks by market value", coins: [...coins].sort((a, b) => a.market_cap_rank - b.market_cap_rank).slice(0, 5) },
+    { title: "Momentum", caption: "Strongest 24-hour price expansion", coins: [...coins].sort((a, b) => b.price_change_percentage_24h - a.price_change_percentage_24h).slice(0, 5) },
+    { title: "In focus", caption: "Assets drawing market attention", coins: trending.slice(0, 5) },
+    { title: "Under pressure", caption: "Weakest 24-hour market structure", coins: [...coins].sort((a, b) => a.price_change_percentage_24h - b.price_change_percentage_24h).slice(0, 5) },
+  ], [coins, trending]);
 
-  if (!topCoins || !globalData || !toplosers || !trending || !isImageLoaded) {
-    return <LoadingScreen />;
-  } else {
-    return (
-      <div className={styles.container} 
-      style={{ backgroundImage: `url(${imgBack})` }}>
-        <Navbar />
-        <Overall data={globalData} />
-        <div className={styles.showGroups}>
-          <div className={styles.leftGroup}>
-            <div className={styles.groupCase}>
-              <>TOP COINS</>
-              <div className={styles.coinShow}>
-                {topCoins.map((item) => {
-                  return <ShowRoomElement coin={item} key={item.cap_rank} />;
-                })}
+  return (
+    <div className={styles.page}>
+      <Navbar />
+      <main className={styles.main}>
+        <Overall data={global} />
+        <div className={styles.groups}>
+          {groups.map((group, index) => (
+            <section className={styles.group} key={group.title}>
+              <div className={styles.groupHeader}>
+                <span>0{index + 1}</span>
+                <div><h2>{group.title}</h2><p>{group.caption}</p></div>
               </div>
-            </div>
-            <div className={styles.groupCase}>
-              <>TOP GAINERS</>
-              <div className={styles.coinShow}>
-                {topgainers.map((item) => {
-                  return <ShowRoomElement coin={item} key={item.cap_rank} />;
-                })}
+              <div className={styles.coinList}>
+                {group.coins.map((coin) => <ShowRoomElement coin={coin} key={coin.id} />)}
               </div>
-            </div>
-          </div>
-          <div className={styles.leftGroup}>
-            <div className={styles.groupCase}>
-              <>TRENDING COINS</>
-              <div className={styles.coinShow}>
-                {trending.map((item) => {
-                  return <ShowRoomElement coin={item} />;
-                })}
-              </div>
-            </div>
-            <div className={styles.groupCase}>
-              <>TOP LOSERS</>
-              <div className={styles.coinShow}>
-                {toplosers.map((item) => {
-                  return <ShowRoomElement coin={item} />;
-                })}
-              </div>
-            </div>
-          </div>
+            </section>
+          ))}
         </div>
-      </div>
-    );
-  }
+      </main>
+    </div>
+  );
 };
+
 export default ShowRoom;
-// this component is responsible for showing the user all the filters on the top of the exchange page at once.

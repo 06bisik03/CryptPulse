@@ -1,37 +1,28 @@
+const toNumber = (value) => {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : 0;
+};
 
-const useCoinFormula = (Coin, currentCoin) => {
-  console.log(Coin, currentCoin);
-  const currentPrice = currentCoin[0].current_price;
-  //   const time = new Date(Coin.coinLastUpdate);
-  //   const hour = time.getHours().toString().padStart(2, "0");
-  //   const minutes = time.getMinutes().toString().padStart(2, "0");
-  //   const seconds = time.getSeconds().toString().padStart(2, "0");
-  //   const formattedTime = `${hour}:${minutes}:${seconds}`;
+const useCoinFormula = (coin = {}, currentCoin = []) => {
+  const market = Array.isArray(currentCoin) ? currentCoin[0] : currentCoin;
+  const currentPrice = toNumber(market?.current_price || coin.coinBuyPrice);
+  const coinAmount = toNumber(coin.coinAmount);
+  const totalSumBought = toNumber(coin.totalSum);
+  const currentSum = coinAmount * currentPrice;
+  const differenceOldVSNew = totalSumBought > 0
+    ? ((currentSum / totalSumBought) * 100 - 100).toFixed(6)
+    : "0.000000";
 
-  const coinAmount = Coin.coinAmount;
-  const coinImage = Coin.coinImage;
-  const totalSumBought = Coin.totalSum;
-  const currentSum = Coin.coinAmount * currentPrice;
-  const coinName = Coin.coinName;
-  const coinBoughtWorth = Coin.coinBuyPrice;
-
-  const differenceOldVSNew = `${(
-    (currentSum / totalSumBought) * 100 -
-    100
-  ).toFixed(6)}`;
-
-  const coinSum = {
-
-    coinImage,
+  return {
+    coinImage: coin.coinImage || market?.image || "",
     currentSum,
     totalSumBought,
     coinAmount,
-    coinBoughtWorth,
-    coinName,
+    coinBoughtWorth: toNumber(coin.coinBuyPrice),
+    coinName: coin.coinName || market?.name || "Unknown asset",
     currentPrice,
     differenceOldVSNew,
   };
-
-  return coinSum;
 };
+
 export default useCoinFormula;

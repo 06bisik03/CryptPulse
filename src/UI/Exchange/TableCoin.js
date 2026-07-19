@@ -1,118 +1,50 @@
-import styles from "./TableCoin.module.css";
 import { Link } from "react-router-dom";
+import styles from "./TableCoin.module.css";
 import CryptoChart from "./CryptoChart";
-import LazyLoad from "react-lazy-load";
+import { formatCompact, formatCurrency, formatPercent, toNumber } from "../../utils/market";
 
-const getNumber = (value) =>
-  typeof value === "number" ? value : Number.parseFloat(value);
-
-const formatCurrencyChange = (value) => {
-  const numericValue = getNumber(value);
-
-  if (!Number.isFinite(numericValue) || numericValue === 0) {
-    return "$0.00000";
-  }
-
-  const absoluteValue = Math.abs(numericValue);
-  const prefix = numericValue > 0 ? "+$" : "-$";
-
-  return `${prefix}${absoluteValue.toFixed(5)}`;
-};
-
-const formatPercentageChange = (value) => {
-  const numericValue = getNumber(value);
-
-  if (!Number.isFinite(numericValue)) {
-    return "N/A";
-  }
-
-  const precision = Math.abs(numericValue) < 0.001 ? 10 : 3;
-  return numericValue.toFixed(precision);
-};
-
-const TableCoin = (props) => {
-  const price = getNumber(props.coin.current_price);
-  const symbol = props.coin.symbol?.toUpperCase() ?? "";
-  const marketCap = formatNumber(props.coin.market_cap);
-  const priceOneDay = formatCurrencyChange(props.coin.price_change_24h);
-  const lastUpdatedDate = new Date(props.coin.last_updated);
-  const hasValidDate = !Number.isNaN(lastUpdatedDate.getTime());
-  const hours = hasValidDate
-    ? lastUpdatedDate.getUTCHours().toString().padStart(2, "0")
-    : "--";
-  const minutes = hasValidDate
-    ? lastUpdatedDate.getUTCMinutes().toString().padStart(2, "0")
-    : "--";
-  const seconds = hasValidDate
-    ? lastUpdatedDate.getUTCSeconds().toString().padStart(2, "0")
-    : "--";
-  const priceData = Array.isArray(props.coin.sparkline_in_7d?.price)
-    ? props.coin.sparkline_in_7d.price.filter((item) => Number.isFinite(item))
-    : [];
-  const negative =
-    priceData.length > 1 ? priceData[0] > priceData[priceData.length - 1] : false;
-
-  const image = props.coin.image;
-  const priceChangePercentage = formatPercentageChange(
-    props.coin.price_change_percentage_24h
-  );
+const TableCoin = ({ coin }) => {
+  const change = toNumber(coin.price_change_percentage_24h);
+  const negative = change < 0;
+  const tradePath = `/exchange/coin=${encodeURIComponent(coin.id)}+${encodeURIComponent(coin.name)}`;
 
   return (
-    <div className={styles.container}>
-      <div>{props.coin.market_cap_rank}</div>
-      <div className={styles.nameCoin}>
-        <LazyLoad>
-          <img src={image} alt="coinimage" />
-        </LazyLoad>
-        <div className={styles.name}>
-          <div>{props.coin.name}</div>
-          <div>{symbol}</div>
-        </div>
+    <div className={styles.container} role="row">
+      <div className={styles.rank} role="cell">{coin.market_cap_rank || "—"}</div>
+      <Link to={tradePath} className={styles.asset} role="cell">
+        {coin.image ? (
+          <img src={coin.image} alt="" onError={(event) => { event.currentTarget.style.display = "none"; }} />
+        ) : (
+          <span className={styles.coinMark} style={{ "--coin": coin.accent }}>{coin.symbol.slice(0, 1).toUpperCase()}</span>
+        )}
+        <span className={styles.identity}>
+          <strong>{coin.name}</strong>
+          <small>{coin.symbol.toUpperCase()}</small>
+        </span>
+      </Link>
+      <div className={styles.price} role="cell">{formatCurrency(coin.current_price)}</div>
+      <div className={`${styles.change} ${negative ? styles.negative : ""}`} role="cell">
+        {formatPercent(change)}
       </div>
-      <div>{Number.isFinite(price) ? `$${price}` : "N/A"}</div>
-      <div>
-        {priceChangePercentage === "N/A"
-          ? priceChangePercentage
-          : `${priceChangePercentage}%`}
-      </div>
-      <div>{priceOneDay}</div>
-      <div>${marketCap}</div>
-      <div>{`${hours}:${minutes}:${seconds}`}</div>
-      <div className={styles.graph}>
+      <div className={styles.cap} role="cell">{formatCurrency(coin.market_cap, { compact: true })}</div>
+      <div className={styles.volume} role="cell">{formatCurrency(coin.total_volume, { compact: true })}</div>
+      <div className={styles.chart} role="cell">
         <CryptoChart
-          data={priceData}
+          data={coin.sparkline_in_7d?.price}
           displacement={negative}
-          size={{
-            widthS: "1300",
-            heightS: "500",
-            widthT: "100%",
-            heightT: "50",
-          }}
+          size={{ widthS: 260, heightS: 70, heightT: 44 }}
+          area={false}
         />
       </div>
-      <div className={styles.btnContainer}>
-        <Link
-          className={styles.tradeBtn}
-          to={`coin=${props.coin.id}+${props.coin.name}`}
-        >
-          Trade
-        </Link>
+      <div className={styles.action} role="cell">
+        <Link className={styles.tradeBtn} to={tradePath} aria-label={`Trade ${coin.name}`}>↗</Link>
       </div>
     </div>
   );
 };
+
 export default TableCoin;
-//this function formats the number so we do not have numbers with digits like 12 or even more than 15
+
 export function formatNumber(number) {
-  const numericValue = getNumber(number);
-
-  if (!Number.isFinite(numericValue) || numericValue === 0) {
-    return "0.0";
-  }
-
-  const abbreviations = ["", "K", "M", "B", "T"];
-  const tier = (Math.log10(Math.abs(numericValue)) / 3) | 0;
-  const scaledNumber = numericValue / Math.pow(1000, tier);
-  return scaledNumber.toFixed(1) + " " + abbreviations[tier];
+  return formatCompact(number, 1);
 }
-//This component is responsible for showcasing every Coin that we fetch. It has minimalistic tweaks to show the price in a suitable way.

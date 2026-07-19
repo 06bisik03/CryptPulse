@@ -1,25 +1,21 @@
-import LazyLoad from "react-lazy-load";
 import styles from "./Card.module.css";
-const Card = (props) => {
-  //the time the card has first been introduced to the system
-  const introTime = new Date(props.data.introductionDate)
-    .toISOString()
-    .substring(0, 10);
-  return (
-    <div className={styles.container}>
-      <div>
-        <LazyLoad>
-          <img alt="x" src={props.data.cardImageUrl} />
-        </LazyLoad>
-      </div>
-      <div>{props.data.cardNum}</div>
-      <div>{props.data.holderName}</div>
-      <div>Expires on: {props.data.expDate}</div>
-      <div>Introduced on: {introTime}</div>
-      <div>Charged: ${props.data.totalSum}</div>
-    </div>
-  );
-};
-export default Card;
+import { formatCurrency, toNumber } from "../../utils/market";
 
-/* This component represent every Card that has been added and will be displayed as an item inside the container which can be found in Wallet.js */
+const maskCard = (number) => {
+  const digits = String(number || "").replace(/\D/g, "");
+  return digits ? `•••• •••• •••• ${digits.slice(-4).padStart(4, "•")}` : "Card unavailable";
+};
+
+const Card = ({ data = {} }) => (
+  <div className={styles.container}>
+    <div className={styles.issuer}>
+      {data.cardImageUrl ? <img alt="" src={data.cardImageUrl} /> : <span>{String(data.type || "Card").slice(0, 2).toUpperCase()}</span>}
+    </div>
+    <div className={styles.number}>{maskCard(data.cardNum)}</div>
+    <div className={styles.holder}>{data.holderName || "Unknown holder"}</div>
+    <div className={styles.expiry}>{data.expDate || "--/----"}</div>
+    <div className={styles.funded}>{formatCurrency(toNumber(data.totalSum))}</div>
+  </div>
+);
+
+export default Card;

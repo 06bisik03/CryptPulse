@@ -1,168 +1,93 @@
-import { useSelector } from "react-redux";
+import { useContext, useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import Navbar from "../UI/Navbar";
 import styles from "./UserProfile.module.css";
 import Coin from "../UI/UserSpec/Coin";
 import Graph from "../UI/UserSpec/Graph";
 import PastTransaction from "../UI/UserSpec/PastTransaction";
-import {
-  setupTransactionsListener,
-  setupAccountFlowListener,
-  setupCoinsListener,
-} from "../firebase";
-import { useContext, useEffect, useState } from "react";
-import LoadingScreen from "../LoadingScreen";
-import { useDispatch } from "react-redux";
+import { setupTransactionsListener, setupAccountFlowListener, setupCoinsListener } from "../firebase";
 import { fetcherGeneral } from "../redux/Api";
 import AuthContext from "../Store/user-ctx";
+import { formatCurrency, toNumber } from "../utils/market";
+
+const safeFlow = (flow) => ({
+  deposits: toNumber(flow?.deposits),
+  investments: toNumber(flow?.investments),
+  totalFlow: toNumber(flow?.totalFlow),
+});
 
 const UserProfile = () => {
-  const generalCoins = useSelector((state) => state.api.generalCoins);
-  const [transactions, setTransactions] = useState([]);
-  const [coins, setCoins] = useState([]);
-  const [filteredGeneralCoins, setFilteredGeneralCoins] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const [accountFlow, setAccountFlow] = useState({
-    deposits: 0,
-    investments: 0,
-    totalFlow: 0,
-  });
   const dispatch = useDispatch();
-  const authctx = useContext(AuthContext);
+  const auth = useContext(AuthContext);
+  const marketCoins = useSelector((state) => state.api.generalCoins);
+  const [transactions, setTransactions] = useState([]);
+  const [positions, setPositions] = useState([]);
+  const [accountFlow, setAccountFlow] = useState(safeFlow());
 
-  useEffect(() => {
-    if (!authctx.currentUser) {
-      return undefined;
-    }
-
-    //32-40: The listener are going to call these functions when the data changes. They change the states of the variables we declared at the beginning.
-    const handleAccountFlowChange = (accountFlowData) => {
-      setAccountFlow(accountFlowData);
-    };
-    const handleCoinsChange = (coinsArray) => {
-      setCoins(coinsArray);
-    };
-    const handleTransactionsChange = (transactionsArray) => {
-      setTransactions(transactionsArray);
-    };
-    //40-43: Listeners for whenever the data we rely on changes
-    const unsubscribeCoins = setupCoinsListener(
-      authctx.currentUser,
-      handleCoinsChange
-    );
-    const unsubscribeTransactions = setupTransactionsListener(
-      authctx.currentUser,
-      handleTransactionsChange
-    );
-    const unsubscribeAccountFlow = setupAccountFlowListener(
-      authctx.currentUser,
-      handleAccountFlowChange
-    );
-
-    return () => {
-      unsubscribeCoins();
-      unsubscribeTransactions();
-      unsubscribeAccountFlow();
-    };
-  }, [authctx.currentUser]);
-  //dispatch fetch action in another hook to prevent calling it when the other data changes
   useEffect(() => {
     dispatch(fetcherGeneral());
   }, [dispatch]);
-  //50-62: if the coins are fetched and received, filter them from the general Coins that is directly from the api, to have more information about the coin. Otherwise do not show the page.
-  useEffect(() => {
-    if (generalCoins.length > 0 && coins.length > 0) {
-      const filterForDetail = generalCoins.filter((generalCoin) =>
-        coins.some((coin) => coin.coinName === generalCoin.name)
-      );
-      setFilteredGeneralCoins(filterForDetail);
-      setLoading(false);
-    } else if (coins) {
-      setFilteredGeneralCoins([0]);
-    } else {
-      setLoading(true);
-    }
-  }, [generalCoins, coins]);
 
   useEffect(() => {
-    // If filteredGeneralCoins is still empty, set loading to true
-    if (filteredGeneralCoins.length === 0) {
-      setLoading(true);
-    } else {
-      setLoading(false);
-    }
-  }, [filteredGeneralCoins]);
+    if (!auth.currentUser) return undefined;
+    const unsubscribeCoins = setupCoinsListener(auth.currentUser, (value) => setPositions(Array.isArray(value) ? value : []));
+    const unsubscribeTransactions = setupTransactionsListener(auth.currentUser, (value) => setTransactions(Array.isArray(value) ? value : []));
+    const unsubscribeFlow = setupAccountFlowListener(auth.currentUser, setAccountFlow);
+    return () => { unsubscribeCoins(); unsubscribeTransactions(); unsubscribeFlow(); };
+  }, [auth.currentUser]);
 
-  if (!authctx.authReady) {
-    return <LoadingScreen />;
-  }
+  const enrichedPositions = useMemo(() => positions.map((position) => ({
+    position,
+    market: marketCoins.find((coin) => coin.id === position.coinId || coin.name === position.coinName),
+  })), [marketCoins, positions]);
 
-  if (loading) {
-    return <LoadingScreen />;
-  } else {
-    return (
-      <div className={styles.container}>
-        <Navbar />
-        <div className={styles.details}>
-          <div className={styles.coins}>
-            {coins.length > 0 && filteredGeneralCoins[0] !== 0 ? (
-              coins.map((coin) => {
-                return (
-                  <Coin
-                    coin={coin}
-                    key={coin.timeOfBuy}
-                    currentData={filteredGeneralCoins.filter(
-                      (item) => item.name === coin.coinName
-                    )}
-                  />
-                );
-              })
-            ) : (
-              <div className={styles.noInvestment}>
-                No investment was made yet!
-              </div>
-            )}
-          </div>
+  const portfolioValue = enrichedPositions.reduce((total, item) => total + toNumber(item.position.coinAmount) * toNumber(item.market?.current_price, item.position.coinBuyPrice), 0);
+  const costBasis = positions.reduce((total, position) => total + toNumber(position.totalSum), 0);
+  const pnl = portfolioValue - costBasis;
 
-          <div className={styles.accountState}>
-            <div className={styles.graph}>
-              <div className={styles.currentFlow}>
-                <div>Account Total Cashflow</div>
-                <div className={styles.currentFlowFigures}>
-                  <div>
-                    Deposits:
-                    <br /> ${accountFlow.deposits.toFixed(2)}
-                  </div>
-                  <div>
-                    Invested: <br />${accountFlow.investments.toFixed(2)}
-                  </div>
-                  <div>
-                    Total Flow:
-                    <br /> ${accountFlow.totalFlow.toFixed(2)}
-                  </div>
-                </div>
-              </div>
-              <Graph investments={accountFlow} />
+  return (
+    <div className={styles.page}>
+      <Navbar />
+      <main className={styles.main}>
+        <header className={styles.heading}>
+          <div><span>Private portfolio</span><h1>Capital overview</h1><p>Your positions, cashflow and execution history in one workspace.</p></div>
+          <div className={styles.portfolioValue}><span>Portfolio value</span><strong>{formatCurrency(portfolioValue)}</strong><small className={pnl < 0 ? styles.negative : ""}>{pnl >= 0 ? "+" : ""}{formatCurrency(pnl)} unrealized</small></div>
+        </header>
+
+        <section className={styles.metrics}>
+          <article><span>Total deposits</span><strong>{formatCurrency(accountFlow.deposits)}</strong><small>Lifetime wallet funding</small></article>
+          <article><span>Capital deployed</span><strong>{formatCurrency(accountFlow.investments)}</strong><small>Across open and closed orders</small></article>
+          <article><span>Net account flow</span><strong>{formatCurrency(accountFlow.totalFlow)}</strong><small>Deposits plus market activity</small></article>
+        </section>
+
+        <div className={styles.workspace}>
+          <section className={styles.positionsPanel}>
+            <div className={styles.panelHeader}><div><span>Open exposure</span><h2>Positions</h2></div><small>{positions.length} assets</small></div>
+            <div className={styles.positions}>
+              {enrichedPositions.length ? enrichedPositions.map(({ position, market }) => (
+                <Coin coin={position} currentData={market} key={position.timeOfBuy || `${position.coinName}-${position.coinAmount}`} />
+              )) : (
+                <div className={styles.empty}><span>◇</span><h3>No open positions</h3><p>Your active assets will appear here after your first order.</p><a href="/exchange">Explore markets →</a></div>
+              )}
             </div>
-            <div className={styles.pastTransactions}>
-              <div className={styles.title}>Past Transactions</div>
-              <div className={styles.transactionContainer}>
-                {transactions ? (
-                  transactions.map((item) => (
-                    <PastTransaction key={item.timeOfBuy} transaction={item} />
-                  ))
-                ) : (
-                  <div className={styles.noTrs}>
-                    No Transactions found yet!{" "}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+          </section>
+
+          <section className={styles.flowPanel}>
+            <div className={styles.panelHeader}><div><span>Allocation</span><h2>Cashflow</h2></div><small>Lifetime</small></div>
+            <Graph investments={accountFlow} />
+          </section>
         </div>
-      </div>
-    );
-  }
+
+        <section className={styles.history}>
+          <div className={styles.panelHeader}><div><span>Audit trail</span><h2>Transaction history</h2></div><small>{transactions.length} records</small></div>
+          <div className={styles.historyHeader}><span>Date</span><span>Asset</span><span>Type</span><span>Quantity</span><span>Total</span></div>
+          <div className={styles.transactionContainer}>
+            {transactions.length ? transactions.map((transaction, index) => <PastTransaction key={transaction.timeOfBuy || transaction.timeOfSell || index} transaction={transaction} />) : <div className={styles.noTransactions}>No transactions have been recorded yet.</div>}
+          </div>
+        </section>
+      </main>
+    </div>
+  );
 };
+
 export default UserProfile;
-//This component is responsible for showing the profile of the user that is currently logged in.

@@ -1,168 +1,18 @@
-@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:ital@1&display=swap');
-
-.container {
-    display: grid;
-    grid-template-rows: auto auto;
-    align-content: start;
-    min-height: 100vh;
-    width: 100%;
-    background: radial-gradient(circle at 52.1% -29.6%, rgb(144, 17, 105) 0%, rgb(51, 0, 131) 100.2%);
-    background-size: cover;
-    color: white;
-    font-family: 'Chakra Petch', sans-serif;
-}
-
-.form {
-    width: min(100%, 54rem);
-    display: grid;
-    justify-self: center;
-    justify-items: center;
-    align-content: start;
-    gap: 1.5rem;
-    padding: 3rem 1.25rem 2rem;
-    box-sizing: border-box;
-}
-
-.logo {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-}
-
-.logo img {
-    width: clamp(16rem, 54vw, 31rem);
-    max-width: 100%;
-    height: auto;
-}
-
-.exp {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    font-size: clamp(1.35rem, 3.4vw, 2rem);
-}
-
-.formHolder {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-}
-
-.dropdown {
-    position: relative;
-    width: min(100%, 36rem);
-}
-
-.dropdownBtn {
-    border-radius: 1rem;
-    background-color: #4158D0;
-    background-image: linear-gradient(43deg, #41eddc 0%, #C850C0 46%, #f8674d 100%);
-    box-shadow: rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset, rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset, rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px, rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px, rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px;
-    font-size: 18px;
-    width: 100%;
-    border: none;
-    color: white;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.85em 0.9em;
-    cursor: pointer;
-    font-family: 'Chakra Petch', sans-serif;
-}
-
-.arrow {
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 6px solid #fff;
-    transition: transform ease-in-out 0.3s;
-}
-
-.dropdownContent {
-    list-style: none;
-    padding-left: 0;
-    margin: 0.75rem 0 0;
-    width: 100%;
-    visibility: hidden;
-    overflow: hidden;
-}
-
-.dropdownContent li {
-    border-radius: 1rem;
-    background-color: #4158D0;
-    background-image: linear-gradient(43deg, #41eddc 0%, #C850C0 46%, #f8674d 100%);
-    box-shadow: rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset, rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset, rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px, rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px, rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px;
-    color: white;
-    position: relative;
-    margin-top: 10px;
-    left: 100%;
-    transition: 0.5s;
-    transition-delay: calc(60ms * var(--delay));
-}
-
-.dropdownBtn:focus+.dropdownContent li {
-    left: 0;
-}
-
-.dropdownBtn:focus+.dropdownContent {
-    visibility: visible;
-}
-
-.dropdownBtn:focus>.arrow {
-    transform: rotate(180deg);
-}
-
-.dropdownContent li:hover {
-    background: rgb(255, 255, 255);
-}
-
-.dropdownContent li a {
-    display: block;
-    padding: 0.8em 0.9em;
-    color: white;
-    text-decoration: none;
-}
-
-@media (max-width: 700px) {
-    .form {
-        gap: 1.15rem;
-        padding: 2.5rem 0.9rem 1.25rem;
-    }
-
-    .logo img {
-        width: clamp(13rem, 68vw, 24rem);
-    }
-
-    .dropdown {
-        width: 100%;
-    }
-
-    .dropdownBtn {
-        font-size: 16px;
-        padding: 0.75em 0.8em;
-    }
-}
-
-@media (max-width: 480px) {
-    .form {
-        gap: 0.95rem;
-        padding-top: 2rem;
-    }
-
-    .logo img {
-        width: clamp(11rem, 78vw, 19rem);
-    }
-
-    .exp {
-        font-size: 1.15rem;
-    }
-
-    .dropdownBtn {
-        font-size: 15px;
-    }
-
-    .dropdownContent li a {
-        padding: 0.7em 0.8em;
-    }
-}
+.page { min-height: 100vh; background: radial-gradient(circle at 18% 6%, rgba(100,251,210,.07), transparent 28rem), var(--ink); }
+.main { width: min(1180px, calc(100% - 48px)); margin: 0 auto; padding: clamp(65px,9vw,130px) 0 84px; }
+.heading { max-width: 800px; animation: rise-in 600ms both; }
+.heading > span { color: var(--mint); font-family: var(--mono); font-size: 8px; letter-spacing: .16em; text-transform: uppercase; }
+.heading h1 { margin: 18px 0 20px; font-family: var(--display); font-size: clamp(54px,8vw,104px); font-weight: 500; letter-spacing: -.065em; line-height: .9; }
+.heading p { max-width: 590px; margin: 0; color: var(--muted); font-size: 14px; line-height: 1.75; }
+.reasons { margin-top: 65px; display: grid; grid-template-columns: repeat(2,1fr); border-top: 1px solid var(--line); border-left: 1px solid var(--line); animation: rise-in 600ms 100ms both; }
+.reasons button, .reasons a { position: relative; min-height: 230px; padding: 26px; display: block; border: 0; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); background: rgba(7,15,12,.58); color: var(--text); text-align: left; text-decoration: none; cursor: pointer; transition: background 200ms ease; }
+.reasons button:hover, .reasons a:hover { background: linear-gradient(135deg, rgba(100,251,210,.08), rgba(7,15,12,.8)); }
+.reasons span { color: var(--mint); font-family: var(--mono); font-size: 8px; }
+.reasons h2 { margin: 66px 0 10px; font-family: var(--display); font-size: 26px; font-weight: 500; }
+.reasons p { max-width: 370px; margin: 0; color: var(--muted); font-size: 11px; line-height: 1.6; }
+.reasons i { position: absolute; top: 24px; right: 24px; color: var(--muted); font-style: normal; transition: 180ms ease; }
+.reasons button:hover i, .reasons a:hover i { color: var(--mint); transform: translate(3px,-3px); }
+.serviceLine { padding: 20px 0; display: flex; justify-content: space-between; gap: 20px; color: var(--muted); font-family: var(--mono); font-size: 8px; text-transform: uppercase; }
+.serviceLine span:first-child { display: flex; align-items: center; gap: 8px; color: var(--mint); }
+.serviceLine i { width: 5px; height: 5px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 10px var(--mint); }
+@media (max-width: 760px) { .main { width: min(100% - 24px,1180px); } .reasons { grid-template-columns: 1fr; } .serviceLine { align-items: flex-start; flex-direction: column; } }

@@ -1,27 +1,15 @@
-.container {
-    width: 100%;
-    height: 100%;
-    min-height: 100vh;
-    display: grid;
-    grid-template-rows: 10% 90%;
-    background-image: url('/public/images/cc2.jpeg');
-    background-size: cover;
-
-    background-repeat: no-repeat;
-
-}
-
-.welcome {
-    width: 100%;
-    height: 100%;
-    display: grid;
-    grid-template-columns: 2.2fr 1fr;
-
-
-}
-
-.welcome h1 {
-    font-size: 45px;
-    padding-left: 45px;
-
-}
+.page { min-height: 100vh; background: radial-gradient(circle at 80% 0, rgba(100,251,210,.08), transparent 28rem), var(--ink); }
+.main { width: min(1180px, calc(100% - 48px)); margin: 0 auto; padding: clamp(70px,9vw,130px) 0 90px; }
+.main header > span, .enroll > div > span { color: var(--mint); font-family: var(--mono); font-size: 8px; letter-spacing: .15em; text-transform: uppercase; }
+.main header h1 { max-width: 980px; margin: 20px 0 28px; font-family: var(--display); font-size: clamp(52px,7vw,96px); font-weight: 500; letter-spacing: -.065em; line-height: .92; }
+.main header p { max-width: 650px; margin: 0; color: var(--muted); font-size: 14px; line-height: 1.8; }
+.curriculum { margin-top: 70px; border-top: 1px solid var(--line); }
+.curriculum > div { min-height: 82px; padding: 0 12px; display: grid; grid-template-columns: 70px 1fr auto; align-items: center; gap: 20px; border-bottom: 1px solid var(--line); transition: background 160ms ease; }
+.curriculum > div:hover { background: rgba(100,251,210,.03); }
+.curriculum span, .curriculum small { color: var(--muted); font-family: var(--mono); font-size: 8px; text-transform: uppercase; }
+.curriculum strong { font-family: var(--display); font-size: 19px; font-weight: 500; }
+.enroll { margin-top: 80px; padding: clamp(35px,6vw,72px); display: grid; grid-template-columns: 1.15fr .85fr; gap: 42px; border: 1px solid var(--line-strong); border-radius: 2px 34px 2px 34px; background: #08110e; }
+.enroll h2 { margin: 14px 0 0; font-family: var(--display); font-size: clamp(38px,5vw,62px); font-weight: 500; line-height: .96; }
+.enroll p { margin: 0; align-self: end; color: var(--muted); font-size: 12px; line-height: 1.8; }
+.enroll a { width: fit-content; padding-bottom: 7px; border-bottom: 1px solid var(--mint); color: var(--text); font-family: var(--mono); font-size: 9px; text-decoration: none; text-transform: uppercase; }
+@media (max-width: 760px) { .main { width: min(100% - 24px,1180px); } .curriculum > div { grid-template-columns: 38px 1fr; } .curriculum small { display: none; } .enroll { grid-template-columns: 1fr; } }

@@ -1,24 +1,22 @@
 import styles from "./Overall.module.css";
-import { formatNumber } from "./TableCoin";
-const Overall = (props) => {
-  console.log(props.data);
-  const curPrice = formatNumber(props.data.total_market_cap.usd);
-  const change = parseFloat(
-    props.data.market_cap_change_percentage_24h_usd
-  ).toFixed(4);
+import { formatCurrency, formatPercent } from "../../utils/market";
+
+const Overall = ({ data = {} }) => {
+  const change = Number(data.market_cap_change_percentage_24h_usd) || 0;
   return (
-    <div className={styles.container}>
-      <div className={styles.overall}>
-        <div>Showroom</div>
-        <div>
-          The tokens that you need to know of today, listed in this very
-          showroom. Rankings are calculated based on user data.
-        </div>
-        <div>The overall crypto market cap for today is ${curPrice} USD.</div>
-        <div>Meanwhile the change in per cent is: {change}%.</div>
+    <header className={styles.container}>
+      <div>
+        <span className={styles.eyebrow}>Daily market brief</span>
+        <h1>The signal room</h1>
+        <p>A compressed view of leadership, momentum and areas of market stress.</p>
       </div>
-    </div>
+      <div className={styles.marketCallout}>
+        <span>Global market value</span>
+        <strong>{formatCurrency(data.total_market_cap?.usd, { compact: true })}</strong>
+        <small className={change < 0 ? styles.negative : ""}>{formatPercent(change)} in 24 hours</small>
+      </div>
+    </header>
   );
 };
+
 export default Overall;
-//This component is the Overall state of the crypto market. Just like a coin, the whole market also has ups and downs.

@@ -1,106 +1,45 @@
-div {
-    box-sizing: border-box;
+.container { min-width: 0; border: 1px solid var(--line); border-radius: 2px 26px 2px 26px; overflow: hidden; background: rgba(7, 14, 12, 0.76); box-shadow: 0 34px 90px rgba(0, 0, 0, 0.2); }
+.toolbar { min-height: 116px; padding: 24px 26px; display: flex; align-items: center; justify-content: space-between; gap: 30px; border-bottom: 1px solid var(--line); background: linear-gradient(100deg, rgba(100, 251, 210, 0.035), transparent 40%); }
+.kicker { color: var(--mint); font-family: var(--mono); font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase; }
+.toolbar h2 { margin: 9px 0 0; font-family: var(--display); font-size: 28px; font-weight: 500; letter-spacing: -0.035em; }
+.toolbar h2 small { margin-left: 8px; color: var(--muted); font-family: var(--mono); font-size: 10px; font-weight: 400; vertical-align: middle; }
+.controls { display: flex; align-items: center; gap: 10px; }
+.search, .sort { height: 42px; display: flex; align-items: center; border: 1px solid var(--line); border-radius: 7px; background: rgba(255, 255, 255, 0.018); }
+.search { width: min(290px, 32vw); gap: 10px; padding: 0 13px; color: var(--muted); }
+.search input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--text); font-size: 11px; }
+.search input::placeholder { color: #62716c; }
+.sort { padding: 0 12px; gap: 8px; }
+.sort span { color: var(--muted); font-family: var(--mono); font-size: 8px; text-transform: uppercase; }
+.sort select { border: 0; outline: 0; background: transparent; color: var(--muted-bright); font-family: var(--mono); font-size: 9px; cursor: pointer; }
+.srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+.table { width: 100%; }
+.header { min-height: 46px; display: grid; grid-template-columns: 42px minmax(190px, 1.3fr) minmax(110px, .8fr) 90px minmax(120px, .85fr) minmax(120px, .85fr) minmax(130px, .9fr) 72px; align-items: center; gap: 18px; padding: 0 24px; border-bottom: 1px solid var(--line); color: #66756f; font-family: var(--mono); font-size: 8px; letter-spacing: 0.09em; text-transform: uppercase; }
+.price, .change, .cap, .volume { text-align: right; }
+.chart, .action { text-align: center; }
+.rows { max-height: 760px; overflow-y: auto; }
+.empty { padding: 70px 24px; color: var(--muted); text-align: center; font-size: 13px; }
+
+@media (max-width: 1040px) {
+  .header { grid-template-columns: 36px minmax(175px, 1.25fr) minmax(105px, .8fr) 82px minmax(115px, .85fr) minmax(120px, .9fr) 68px; }
+  .volume { display: none; }
 }
 
-.container {
-    width: 100%;
-    min-height: 0;
-    background-color: rgba(255, 255, 255, 0.725);
-    color: black;
-    border-radius: 18px;
-    overflow: hidden;
+@media (max-width: 760px) {
+  .toolbar { align-items: stretch; flex-direction: column; padding: 20px; }
+  .controls { align-items: stretch; flex-direction: column; }
+  .search { width: 100%; }
+  .sort { justify-content: space-between; }
+  .header { grid-template-columns: minmax(145px, 1fr) minmax(90px, .7fr) 76px 58px; gap: 10px; padding: 0 15px; }
+  .rank, .cap, .volume, .chart { display: none; }
+  .asset { grid-column: 1; }
+  .price { grid-column: 2; }
+  .change { grid-column: 3; }
+  .action { grid-column: 4; }
+  .rows { max-height: none; }
 }
 
-.tableScroll {
-    width: 100%;
-    overflow-x: auto;
-    overflow-y: hidden;
-}
-
-.tableInner {
-    min-width: 72rem;
-}
-
-.filter {
-    width: 100%;
-    display: grid;
-    grid-template-columns: 1fr 3fr 3fr 2fr 2fr 2fr 2fr 3fr 1fr;
-    gap: 1rem;
-    border-bottom: 1px solid rgb(197, 197, 197);
-    align-items: center;
-    padding: 0.9rem 1rem;
-    font-size: 0.95rem;
-}
-
-.filter div:nth-child(1) {
-    justify-self: center;
-}
-
-.filter div:nth-child(n+3):nth-child(-n+7) {
-    justify-self: right;
-}
-
-.filter div:nth-child(8) {
-    justify-self: center;
-}
-
-.filter div:nth-child(9) {
-    justify-self: center;
-}
-
-.filter div {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.coinListContainer {
-    width: 100%;
-}
-
-.coinList {
-    width: 100%;
-    max-height: 34rem;
-    overflow-y: auto;
-}
-
-.tableScroll::-webkit-scrollbar,
-.coinList::-webkit-scrollbar {
-    height: 6px;
-    width: 6px;
-}
-
-.tableScroll::-webkit-scrollbar-thumb,
-.coinList::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.45);
-    border-radius: 999px;
-}
-
-@media (max-width: 700px) {
-    .container {
-        border-radius: 14px;
-    }
-
-    .tableInner {
-        min-width: 60rem;
-    }
-
-    .filter {
-        padding: 0.75rem 0.85rem;
-        font-size: 0.82rem;
-    }
-
-    .coinListContainer {
-        width: 100%;
-    }
-
-    .coinList {
-        max-height: 30rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .tableInner {
-        min-width: 54rem;
-    }
+@media (max-width: 430px) {
+  .header { grid-template-columns: minmax(128px, 1fr) minmax(88px, .7fr) 50px; }
+  .change { display: none; }
+  .action { grid-column: 3; }
 }

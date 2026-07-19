@@ -1,55 +1,101 @@
-import { Link } from "react-router-dom";
+import { NavLink, Link, useLocation } from "react-router-dom";
 import styles from "./Navbar.module.css";
 import { useContext, useEffect, useState } from "react";
 import AuthContext from "../Store/user-ctx";
 import { readUserData } from "../firebase";
 
-const Navbar = (props) => {
-  const [prof, setProf] = useState("Profile");
-  const authctx = useContext(AuthContext);
-  //if the user is signed in, set the name that will appear on the navbar to the users full name from firebase. If not, set it to 'Profile'.
+const navItems = [
+  { to: "/exchange", label: "Markets" },
+  { to: "/wallet", label: "Wallet" },
+  { to: "/mentoring", label: "Intelligence" },
+  { to: "/contact", label: "Support" },
+];
+
+const Navbar = () => {
+  const [profileName, setProfileName] = useState("Account");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const auth = useContext(AuthContext);
+  const location = useLocation();
+
   useEffect(() => {
-    if (authctx.currentUser) {
-      readUserData(authctx.currentUser).then((userData) => {
-        setProf(userData?.fullName || "Profile");
-      });
-    } else {
-      setProf("Profile");
+    let active = true;
+    if (!auth.currentUser) {
+      setProfileName("Account");
+      return undefined;
     }
-  }, [authctx.currentUser]);
+
+    readUserData(auth.currentUser).then((userData) => {
+      if (active) {
+        setProfileName(userData?.fullName?.split(" ")[0] || "Portfolio");
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [auth.currentUser]);
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
 
   return (
-    <div className={styles.container}>
-      <Link to="/">
-        <img alt="x"className={styles.logo} src="/images/finallogo.png" />
-      </Link>
+    <header className={styles.header}>
+      <nav className={styles.container} aria-label="Primary navigation">
+        <Link to="/" className={styles.brand} aria-label="CryptPulse home">
+          <span className={styles.mark} aria-hidden="true">
+            <span />
+            <span />
+          </span>
+          <span className={styles.wordmark}>CRYPT<span>PULSE</span></span>
+        </Link>
 
-      <div className={styles.nav}>
-        {authctx.isLoggedIn ? (
-          <Link
-            className={styles.button}
-            onClick={authctx.onLogout}
-            to="/profile">
-            <i
-              className="fa-solid fa-arrow-right-from-bracket"
-              style={{ color: "#ffffff" }}></i>
-          </Link>
-        ) : null}
-        <Link to="/profile" className={styles.button}>
-          {prof}
-        </Link>
-        <Link to="/wallet" className={styles.button}>
-          Wallet
-        </Link>
-        <Link to="/exchange" className={styles.button}>
-          Exchange
-        </Link>
-        <Link to="/contact" className={styles.button}>
-          Contact
-        </Link>
-      </div>
-    </div>
+        <button
+          className={styles.menuToggle}
+          type="button"
+          aria-expanded={menuOpen}
+          aria-controls="primary-menu"
+          aria-label={menuOpen ? "Close navigation" : "Open navigation"}
+          onClick={() => setMenuOpen((open) => !open)}
+        >
+          <span />
+          <span />
+        </button>
+
+        <div
+          id="primary-menu"
+          className={`${styles.navPanel} ${menuOpen ? styles.open : ""}`}
+        >
+          <div className={styles.navLinks}>
+            {navItems.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  `${styles.navLink} ${isActive ? styles.active : ""}`
+                }
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          </div>
+
+          <div className={styles.accountArea}>
+            <span className={styles.network}><i /> Market live</span>
+            <NavLink to="/profile" className={styles.accountLink}>
+              <span className={styles.avatar}>{profileName.charAt(0).toUpperCase()}</span>
+              <span>{profileName}</span>
+            </NavLink>
+            {auth.isLoggedIn && (
+              <button className={styles.logout} type="button" onClick={auth.onLogout}>
+                Exit
+              </button>
+            )}
+          </div>
+        </div>
+      </nav>
+    </header>
   );
 };
+
 export default Navbar;
-//This component is the Navigation bar

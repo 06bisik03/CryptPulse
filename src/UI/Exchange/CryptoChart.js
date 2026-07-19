@@ -1,56 +1,91 @@
-import React, { useEffect, useRef } from "react";
+import { useId } from "react";
 
-const CryptoChart = ({ data, displacement, size }) => {
-  const svgRef = useRef(null);
+const getChartPoints = (data, width, height, padding) => {
+  const values = Array.isArray(data)
+    ? data.map(Number).filter(Number.isFinite)
+    : [];
 
-  useEffect(() => {
-    if (svgRef.current && data) {
-      const svg = svgRef.current;
-      const minY = Math.min(...data);
-      const maxY = Math.max(...data);
-      const height = size.heightS;
-      const totalWidth = size.widthS;
-      const scaleX = totalWidth / (data.length - 1);
-      const scaleY = height / (maxY - minY);
+  if (values.length < 2) {
+    return [];
+  }
 
-      const points = data
-        .map((y, index) => `${index * scaleX},${height - (y - minY) * scaleY}`)
-        .join(" ");
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1;
+  const availableWidth = width - padding * 2;
+  const availableHeight = height - padding * 2;
 
-      const polyline = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "polyline"
-      );
-      polyline.setAttribute("points", points);
-      polyline.setAttribute("fill", "none");
-      polyline.setAttribute(
-        "stroke",
-        `${
-          displacement === true
-            ? "red"
-            : displacement === false
-            ? "green"
-            : "blue"
-        }`
-      );
-      polyline.setAttribute("stroke-width", "8");
-      svg.appendChild(polyline);
-    }
-  }, [data,displacement,size.heightS,size.widthS]);
+  return values.map((value, index) => ({
+    x: padding + (index / (values.length - 1)) * availableWidth,
+    y: padding + ((max - value) / range) * availableHeight,
+  }));
+};
 
-  const widthT = size.widthT;
-  const heightT = size.heightT;
+const smoothPath = (points) => {
+  if (!points.length) return "";
+  return points.reduce((path, point, index) => {
+    if (index === 0) return `M ${point.x} ${point.y}`;
+    const previous = points[index - 1];
+    const centerX = (previous.x + point.x) / 2;
+    return `${path} C ${centerX} ${previous.y}, ${centerX} ${point.y}, ${point.x} ${point.y}`;
+  }, "");
+};
+
+const CryptoChart = ({
+  data,
+  displacement = false,
+  size = {},
+  color,
+  area = true,
+  strokeWidth,
+  className,
+}) => {
+  const rawId = useId();
+  const gradientId = `chart-${rawId.replace(/:/g, "")}`;
+  const width = Number(size.widthS) || 800;
+  const height = Number(size.heightS) || 240;
+  const points = getChartPoints(data, width, height, Math.max(height * 0.08, 8));
+  const linePath = smoothPath(points);
+  const chartColor = color || (displacement ? "#ff6685" : "#64fbd2");
+  const areaPath = points.length
+    ? `${linePath} L ${points[points.length - 1].x} ${height} L ${points[0].x} ${height} Z`
+    : "";
+
   return (
-    <div>
-      <svg
-        ref={svgRef}
-        viewBox={`0 0 ${size.widthS} ${size.heightS}`}
-        width={widthT}
-        height={heightT}
-      />
-    </div>
+    <svg
+      className={className}
+      viewBox={`0 0 ${width} ${height}`}
+      width={size.widthT || "100%"}
+      height={size.heightT || "100%"}
+      preserveAspectRatio="none"
+      role="img"
+      aria-label="Price movement line chart"
+    >
+      <defs>
+        <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stopColor={chartColor} stopOpacity="0.28" />
+          <stop offset="1" stopColor={chartColor} stopOpacity="0" />
+        </linearGradient>
+        <filter id={`${gradientId}-glow`} x="-20%" y="-100%" width="140%" height="300%">
+          <feGaussianBlur stdDeviation={height > 300 ? 4 : 2.5} result="blur" />
+          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
+      </defs>
+      {area && areaPath && <path d={areaPath} fill={`url(#${gradientId})`} />}
+      {linePath && (
+        <path
+          d={linePath}
+          fill="none"
+          stroke={chartColor}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={strokeWidth || (height > 300 ? 3 : 2)}
+          vectorEffect="non-scaling-stroke"
+          filter={`url(#${gradientId}-glow)`}
+        />
+      )}
+    </svg>
   );
 };
 
 export default CryptoChart;
-//This component is responsible for displaying the graph of the prices of the coin in the last 7 days in a plotless graph to provide better user experience.

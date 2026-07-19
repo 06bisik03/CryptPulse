@@ -1,254 +1,126 @@
-import styles from "./LoginPage.module.css";
 import { useContext, useState } from "react";
-import AuthContext from "../Store/user-ctx";
-import { auth } from "../firebase";
+import { useNavigate, Link } from "react-router-dom";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
-import {
-  createDefaultUserFinanceDetails,
-  ensureUserRecord,
-  writeUserData,
-} from "../firebase";
-import { useNavigate } from "react-router";
+import styles from "./LoginPage.module.css";
+import AuthContext from "../Store/user-ctx";
+import { auth, createDefaultUserFinanceDetails, ensureUserRecord, writeUserData } from "../firebase";
 
 const formatAuthError = (error) => {
   switch (error?.code) {
-    case "auth/email-already-in-use":
-      return "That email address is already in use.";
-    case "auth/invalid-email":
-      return "Enter a valid email address.";
-    case "auth/weak-password":
-      return "Password must be at least 6 characters.";
+    case "auth/email-already-in-use": return "That email address is already in use.";
+    case "auth/invalid-email": return "Enter a valid email address.";
+    case "auth/weak-password": return "Password must be at least 6 characters.";
     case "auth/invalid-login-credentials":
     case "auth/user-not-found":
-    case "auth/wrong-password":
-      return "Email or password is incorrect.";
-    default:
-      return "Authentication failed. Please try again.";
+    case "auth/wrong-password": return "Email or password is incorrect.";
+    case "auth/network-request-failed": return "The secure sign-in service is unreachable. Check your connection and try again.";
+    case "auth/too-many-requests": return "Too many attempts. Wait briefly before trying again.";
+    default: return "Authentication failed. Please try again.";
   }
-};
-
-const formatDatabaseError = (error) => {
-  if (
-    error?.code === "PERMISSION_DENIED" ||
-    error?.message?.toLowerCase().includes("permission")
-  ) {
-    return "Account created, but profile setup failed because Firebase Database rules denied access.";
-  }
-
-  return "Account created, but profile setup failed.";
 };
 
 const LoginPage = () => {
-  const authctx = useContext(AuthContext);
+  const authContext = useContext(AuthContext);
   const navigate = useNavigate();
-  const [loginEmail, setLoginEmail] = useState("");
-  const [loginPass, setLoginPass] = useState("");
-  const [gotError, setGotError] = useState("");
+  const [mode, setMode] = useState("signin");
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState("");
+  const [login, setLogin] = useState({ email: "", password: "" });
+  const [signup, setSignup] = useState({ name: "", email: "", birthDate: "", password: "" });
 
-  const [signUpEmail, setSignUpEmail] = useState("");
-  const [signUpPass, setSignUpPass] = useState("");
-  const [bday, setBday] = useState("");
-  const [fullName, setFullName] = useState("");
-
-  const userFinance = createDefaultUserFinanceDetails();
-
-  const handleSignUpSubmission = async (event) => {
+  const handleLogin = async (event) => {
     event.preventDefault();
-    setGotError("");
-
-    if (!fullName.trim() || !signUpEmail.trim() || !signUpPass || !bday) {
-      setGotError("Fill in all sign up fields.");
-      return;
-    }
-
+    setError("");
+    if (!login.email.trim() || !login.password) return setError("Enter both email and password.");
+    setPending(true);
     try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        signUpEmail.trim(),
-        signUpPass
-      );
-      const user = userCredential.user;
+      const credential = await signInWithEmailAndPassword(auth, login.email.trim(), login.password);
+      await ensureUserRecord(credential.user);
+      authContext.onLogin(credential.user.uid);
+      navigate("/profile");
+    } catch (submissionError) {
+      setError(formatAuthError(submissionError));
+    } finally {
+      setPending(false);
+    }
+  };
 
+  const handleSignup = async (event) => {
+    event.preventDefault();
+    setError("");
+    if (!signup.name.trim() || !signup.email.trim() || !signup.birthDate || !signup.password) {
+      return setError("Complete every account field.");
+    }
+    setPending(true);
+    try {
+      const credential = await createUserWithEmailAndPassword(auth, signup.email.trim(), signup.password);
       try {
-        await writeUserData(
-          user.uid,
-          userFinance,
-          fullName.trim(),
-          signUpEmail.trim(),
-          bday
-        );
-      } catch (databaseError) {
+        await writeUserData(credential.user.uid, createDefaultUserFinanceDetails(), signup.name.trim(), signup.email.trim(), signup.birthDate);
+      } catch {
         await signOut(auth);
-        setGotError(formatDatabaseError(databaseError));
-        return;
+        throw new Error("profile-write-failed");
       }
-
-      //if signed up also log them in right after
-      authctx.onLogin(user.uid);
+      authContext.onLogin(credential.user.uid);
       navigate("/profile");
-    } catch (error) {
-      setGotError(formatAuthError(error));
+    } catch (submissionError) {
+      setError(submissionError.message === "profile-write-failed" ? "Your account was created but the portfolio profile could not be initialized. Please try signing in." : formatAuthError(submissionError));
+    } finally {
+      setPending(false);
     }
   };
 
-  const handleLoginSubmission = async (event) => {
-    event.preventDefault();
-    setGotError("");
-
-    if (!loginEmail.trim() || !loginPass) {
-      setGotError("Enter both email and password.");
-      return;
-    }
-
-    try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        loginEmail.trim(),
-        loginPass
-      );
-      const user = userCredential.user;
-      await ensureUserRecord(user);
-      authctx.onLogin(user.uid);
-      navigate("/profile");
-    } catch (error) {
-      setGotError(formatAuthError(error));
-    }
-  };
   return (
-    <div className={styles["login-wrap"]}>
-      <div className={styles["login-html"]}>
-        <input
-          id="tab-1"
-          type="radio"
-          name="tab"
-          className={styles["sign-in"]}
-          defaultChecked
-        />
-        <label htmlFor="tab-1" className={styles.tab}>
-          Sign In
-        </label>
-        <input
-          id="tab-2"
-          type="radio"
-          name="tab"
-          className={styles["sign-up"]}
-        />
-        <label htmlFor="tab-2" className={styles.tab}>
-          Sign Up
-        </label>
-        <div className={styles["login-form"]}>
-          <form
-            className={styles["sign-in-htm"]}
-            onSubmit={handleLoginSubmission}>
-            <div className={styles.group}>
-              <label htmlFor="user" className={styles.label}>
-                Email
-              </label>
-              <input
-                id="user-1"
-                type="text"
-                className={styles.input}
-                name="loginEmail"
-                value={loginEmail}
-                onChange={(e) => setLoginEmail(e.target.value)}
-                autoComplete="off"
-              />
-            </div>
-            <div className={styles.group}>
-              <label htmlFor="pass" className={styles.label}>
-                Password
-              </label>
-              <input
-                id="pass-1"
-                type="password"
-                className={styles.input}
-                data-type="password"
-                name="password"
-                value={loginPass}
-                onChange={(e) => setLoginPass(e.target.value)}
-              />
-            </div>
-            <div className={styles.group}>
-              <input type="submit" className={styles.button} value="Sign In" />
-            </div>
-            {gotError !== "" ? (
-              <div style={{ fontSize: "20px", marginTop: "10px", color: "yellow" }}>
-                {gotError}{" "}
-              </div>
-            ) : null}
-          </form>
-
-          <form
-            className={styles["sign-up-htm"]}
-            onSubmit={handleSignUpSubmission}>
-            <div className={styles.group}>
-              <label htmlFor="email" className={styles.label}>
-                Name/Surname
-              </label>
-              <input
-                id="email"
-                type="text"
-                className={styles.input}
-                autoComplete="off"
-                onChange={(e) => setFullName(e.target.value)}
-                value={fullName}
-              />
-            </div>
-            <div className={styles.group}>
-              <label htmlFor="email" className={styles.label}>
-                Email Address
-              </label>
-              <input
-                id="email"
-                type="text"
-                className={styles.input}
-                onChange={(e) => setSignUpEmail(e.target.value)}
-                value={signUpEmail}
-                autoComplete="off"
-              />
-            </div>
-            <div className={styles.group}>
-              <label htmlFor="email" className={styles.label}>
-                Date of Birth
-              </label>
-              <input
-                id="email"
-                type="date"
-                className={styles.input}
-                value={bday}
-                onChange={(e) => setBday(e.target.value)}
-              />
-            </div>
-            <div className={styles.group}>
-              <label htmlFor="pass" className={styles.label}>
-                Password
-              </label>
-              <input
-                id="pass-2"
-                type="password"
-                className={styles.input}
-                data-type="password"
-                onChange={(e) => setSignUpPass(e.target.value)}
-                value={signUpPass}
-              />
-            </div>
-            <div className={styles.group}>
-              <input type="submit" className={styles.button} value="Sign Up" />
-            </div>
-            <div className={styles.hr}></div>
-            <div className={styles["foot-lnk"]}>
-              <label htmlFor="tab-1">Already a Member?</label>
-            </div>
-          </form>
+    <main className={styles.page}>
+      <section className={styles.manifesto}>
+        <span className={styles.eyebrow}>Private market workspace</span>
+        <h1>Every position.<br /><em>One pulse.</em></h1>
+        <p>Sign in to access your wallet, portfolio exposure, transaction history, and secure trading workflow.</p>
+        <div className={styles.securityGrid}>
+          <div><strong>01</strong><span>Protected authentication</span></div>
+          <div><strong>02</strong><span>Persistent portfolio state</span></div>
+          <div><strong>03</strong><span>Resilient market snapshots</span></div>
         </div>
-      </div>
-    </div>
+        <Link to="/exchange">Browse markets without signing in →</Link>
+      </section>
+
+      <section className={styles.panel}>
+        <div className={styles.tabs} role="tablist">
+          <button type="button" className={mode === "signin" ? styles.active : ""} onClick={() => { setMode("signin"); setError(""); }}>Sign in</button>
+          <button type="button" className={mode === "signup" ? styles.active : ""} onClick={() => { setMode("signup"); setError(""); }}>Create account</button>
+        </div>
+
+        <div className={styles.formHeader}>
+          <span>{mode === "signin" ? "Welcome back" : "Join CryptPulse"}</span>
+          <h2>{mode === "signin" ? "Access your portfolio" : "Open your market account"}</h2>
+        </div>
+
+        {mode === "signin" ? (
+          <form onSubmit={handleLogin} className={styles.form}>
+            <label htmlFor="login-email"><span>Email address</span><input id="login-email" type="email" autoComplete="email" value={login.email} onChange={(event) => setLogin({ ...login, email: event.target.value })} placeholder="name@example.com" /></label>
+            <label htmlFor="login-password"><span>Password</span><input id="login-password" type="password" autoComplete="current-password" value={login.password} onChange={(event) => setLogin({ ...login, password: event.target.value })} placeholder="••••••••" /></label>
+            {error && <div className={styles.error} role="alert">{error}</div>}
+            <button className={styles.submit} type="submit" disabled={pending}>{pending ? "Securing session…" : "Enter portfolio"}<span>↗</span></button>
+          </form>
+        ) : (
+          <form onSubmit={handleSignup} className={styles.form}>
+            <label htmlFor="signup-name"><span>Full name</span><input id="signup-name" type="text" autoComplete="name" value={signup.name} onChange={(event) => setSignup({ ...signup, name: event.target.value })} placeholder="Your name" /></label>
+            <label htmlFor="signup-email"><span>Email address</span><input id="signup-email" type="email" autoComplete="email" value={signup.email} onChange={(event) => setSignup({ ...signup, email: event.target.value })} placeholder="name@example.com" /></label>
+            <div className={styles.formRow}>
+              <label htmlFor="signup-birth"><span>Date of birth</span><input id="signup-birth" type="date" value={signup.birthDate} onChange={(event) => setSignup({ ...signup, birthDate: event.target.value })} /></label>
+              <label htmlFor="signup-password"><span>Password</span><input id="signup-password" type="password" minLength="6" autoComplete="new-password" value={signup.password} onChange={(event) => setSignup({ ...signup, password: event.target.value })} placeholder="6+ characters" /></label>
+            </div>
+            {error && <div className={styles.error} role="alert">{error}</div>}
+            <button className={styles.submit} type="submit" disabled={pending}>{pending ? "Creating account…" : "Create account"}<span>↗</span></button>
+          </form>
+        )}
+        <p className={styles.legal}>By continuing, you acknowledge that digital assets are volatile and that CryptPulse is a simulated portfolio environment.</p>
+      </section>
+    </main>
   );
 };
 
 export default LoginPage;
-//this component is responsible for signing the user in and up while sending the form data to firebase database.

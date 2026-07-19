@@ -1,75 +1,61 @@
-import {  useState } from "react";
+import { useState } from "react";
 import { buyCoin } from "../../firebase";
-
 import styles from "./Confirmation.module.css";
 import Purchased from "./Purchased";
-import InsufficientFunds from "./InsufficientFunds";
+import { formatCurrency } from "../../utils/market";
 
-const Confirmation = (props) => {
-  const [purchaseSuccessful, setPurchaseSuccessful] = useState(false);
-
-  const [showInsufficientFunds, setShowInsufficientFunds] = useState(false);
+const Confirmation = ({ data, onCancel }) => {
+  const [state, setState] = useState("review");
+  const [error, setError] = useState("");
 
   const handleCoinPurchase = async () => {
-
-    const time = new Date();
-    const currentTime = time.getTime();
-    //create a variable for purchase transaction
+    setState("submitting");
+    setError("");
+    const currentTime = Date.now();
     const transactionDetails = {
       userLogged: localStorage.getItem("userLogged"),
-      coinID: props.data.coin.id,
-      coinAmount: props.data.formData.coinAmount,
-      coinBuyPrice: props.data.coin.current_price,
-      coinSymbol: props.data.coin.symbol,
-      coinName: props.data.coin.name,
-      totalSum: props.data.formData.price,
-      coinImage: props.data.coin.image,
-      coinLastUpdate: props.data.coin.last_updated,
+      coinID: data.coin.id,
+      coinAmount: Number(data.formData.coinAmount),
+      coinBuyPrice: Number(data.coin.current_price),
+      coinSymbol: data.coin.symbol,
+      coinName: data.coin.name,
+      totalSum: Number(data.formData.price),
+      coinImage: data.coin.image,
+      coinLastUpdate: data.coin.last_updated,
       timeOfBuy: currentTime,
     };
-    //make use of buyCoin declared in firebase.js
-    const funds = await buyCoin(transactionDetails);
-    //if funds will be true, then user has enough money = transaction successful
-    if (funds) {
-      setPurchaseSuccessful(true);
-    } else {
-      setShowInsufficientFunds(true);
+
+    try {
+      const purchased = await buyCoin(transactionDetails);
+      if (purchased) setState("success");
+      else { setState("review"); setError("Your wallet balance is not sufficient for this order."); }
+    } catch {
+      setState("review");
+      setError("The order could not be completed. Your balance was not changed.");
     }
   };
+
+  if (state === "success") {
+    return <Purchased amountOfCrypto={data.formData.coinAmount} typeOfCrypto={data.coin.symbol} />;
+  }
+
   return (
-    <div className={styles.backdrop}>
-      {purchaseSuccessful && (
-        <Purchased
-          amountOfCrypto={props.data.formData.coinAmount}
-          typeOfCrypto={props.data.coin.symbol}
-        />
-      )}
-      {showInsufficientFunds && (
-        <InsufficientFunds onCancel={() => setShowInsufficientFunds(false)} />
-      )}{" "}
-      (
+    <div className={styles.backdrop} role="dialog" aria-modal="true" aria-labelledby="order-title">
       <div className={styles.container}>
-        <div>
-          <h2>Purchase Confirmation</h2>
+        <span className={styles.kicker}>Final review</span>
+        <h2 id="order-title">Confirm market order</h2>
+        <p>You are buying <strong>{Number(data.formData.coinAmount).toLocaleString(undefined, { maximumFractionDigits: 8 })} {data.coin.symbol.toUpperCase()}</strong> at the current market rate.</p>
+        <div className={styles.summary}>
+          <span>Estimated total</span><strong>{formatCurrency(data.formData.price)}</strong>
         </div>
-        <div>
-          Are you sure you would like to buy {props.data.formData.coinAmount}{" "}
-          {props.data.coin.name}/s for ${props.data.formData.price}?
-        </div>
+        {error && <div className={styles.error} role="alert">{error}</div>}
         <div className={styles.buttons}>
-          <button
-            onClick={() => {
-              props.onCancel();
-            }}>
-            Cancel
-          </button>
-          <button onClick={handleCoinPurchase}>Confirm</button>
+          <button type="button" onClick={onCancel} disabled={state === "submitting"}>Cancel</button>
+          <button type="button" onClick={handleCoinPurchase} disabled={state === "submitting"}>{state === "submitting" ? "Executing…" : "Confirm buy"}</button>
         </div>
       </div>
-      )
     </div>
   );
 };
 
 export default Confirmation;
-//this component is responsible for evaluating whether the transaction is valid or not.It alerts the user whether they are sure of this transaction. It shows an appropriate modal according to its validity.

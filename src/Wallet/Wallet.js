@@ -1,195 +1,107 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../UI/Navbar";
 import Card from "../UI/Wallet/Card";
 import styles from "./Wallet.module.css";
 import CardAddition from "./CardAddition";
-import { useNavigate } from "react-router";
-import { setupCardsListener } from "../firebase";
-import {
-  auth,
-  createDefaultUserFinanceDetails,
-  ensureUserRecord,
-  readUserData,
-  readUserFinanceDetails,
-  setupMoneyListener,
-} from "../firebase";
 import TopUp from "./TopUp";
 import LoadingScreen from "../LoadingScreen";
 import AuthContext from "../Store/user-ctx";
+import { auth, ensureUserRecord, readUserData, setupCardsListener, setupMoneyListener } from "../firebase";
+import { formatCurrency, toNumber } from "../utils/market";
+
+const cardImages = {
+  Mastercard: "/images/logomaster.png",
+  VISA: "/images/visa.png",
+  Square: "/images/square.png",
+  AmericanExpress: "/images/americanexpress.png",
+  Paypal: "/images/paypal.png",
+};
 
 const Wallet = () => {
-  const [userName, setUserName] = useState("");
-  const [topUp, setTopUp] = useState(false);
-  const [userFinanceDetails, setUserFinanceDetails] = useState(null);
-  const [cardAddition, setCardAddition] = useState(false);
-  const [money, setMoney] = useState(0);
-  const [walletLoading, setWalletLoading] = useState(true);
-  const [walletError, setWalletError] = useState("");
-
-  const [allCards, setAllCards] = useState([]);
+  const authContext = useContext(AuthContext);
   const navigate = useNavigate();
-  const authctx = useContext(AuthContext);
-  //Store all card images inside an object
-  const cardImages = {
-    Mastercard: "/images/logomaster.png",
-    VISA: "/images/visa.png",
-    Square: "/images/square.png",
-    AmericanExpress: "/images/americanexpress.png",
-    Paypal: "/images/paypal.png",
-  };
-  //33-48:  if user is logged in, extract the user's name and financial details
+  const [userName, setUserName] = useState("");
+  const [money, setMoney] = useState(0);
+  const [cards, setCards] = useState({});
+  const [modal, setModal] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
   useEffect(() => {
-    let isMounted = true;
-
-    if (!authctx.authReady) {
+    if (!authContext.authReady) return;
+    if (!authContext.isLoggedIn || !authContext.currentUser) {
+      navigate("/profile", { replace: true });
       return;
     }
 
-    if (!authctx.isLoggedIn || !authctx.currentUser) {
-      navigate("/profile");
-      return;
-    }
-
-    const loadWalletData = async () => {
-      setWalletLoading(true);
-      setWalletError("");
-
+    let active = true;
+    const loadProfile = async () => {
+      setLoading(true);
       try {
-        const [userData, financeData] = await Promise.all([
-          readUserData(authctx.currentUser),
-          readUserFinanceDetails(authctx.currentUser),
-        ]);
-
-        let nextUserData = userData;
-        let nextFinanceData = financeData;
-
-        if ((!nextUserData || !nextFinanceData) && auth.currentUser) {
-          const ensuredUserData = await ensureUserRecord(auth.currentUser);
-          nextUserData = nextUserData || ensuredUserData;
-          nextFinanceData = nextFinanceData || ensuredUserData.userFinanceDetails;
-        }
-
-        if (!isMounted) {
-          return;
-        }
-
-        setUserName(nextUserData?.fullName || "");
-        setUserFinanceDetails(
-          nextFinanceData || createDefaultUserFinanceDetails()
-        );
-      } catch (error) {
-        console.error("Error loading wallet data:", error);
-
-        if (!isMounted) {
-          return;
-        }
-
-        setWalletError("Wallet data could not be loaded.");
-        setUserFinanceDetails(createDefaultUserFinanceDetails());
+        let user = await readUserData(authContext.currentUser);
+        if (!user && auth.currentUser) user = await ensureUserRecord(auth.currentUser);
+        if (active) setUserName(user?.fullName || "CryptPulse member");
+      } catch {
+        if (active) setError("Your wallet profile could not be refreshed. Live balances may be delayed.");
       } finally {
-        if (isMounted) {
-          setWalletLoading(false);
-        }
+        if (active) setLoading(false);
       }
     };
+    loadProfile();
+    return () => { active = false; };
+  }, [authContext.authReady, authContext.currentUser, authContext.isLoggedIn, navigate]);
 
-    loadWalletData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [authctx.authReady, authctx.currentUser, authctx.isLoggedIn, navigate]);
-
-  //subscribe to the changes that will take place in userFinanceDetails: 
   useEffect(() => {
-    if (!authctx.authReady || !authctx.isLoggedIn || !authctx.currentUser) {
-      return undefined;
-    }
+    if (!authContext.currentUser) return undefined;
+    const unsubscribeMoney = setupMoneyListener(authContext.currentUser, (value) => setMoney(toNumber(value)));
+    const unsubscribeCards = setupCardsListener(authContext.currentUser, (value) => setCards(value && typeof value === "object" ? value : {}));
+    return () => { unsubscribeMoney(); unsubscribeCards(); };
+  }, [authContext.currentUser]);
 
-    const unsubscribeMoney = setupMoneyListener(authctx.currentUser, setMoney);
-    const unsubscribeCards = setupCardsListener(
-      authctx.currentUser,
-      setAllCards
-    );
+  const cardList = useMemo(() => Object.values(cards || {}), [cards]);
+  const totalFunded = cardList.reduce((total, card) => total + toNumber(card.totalSum), 0);
 
-    return () => {
-      unsubscribeMoney();
-      unsubscribeCards();
-    };
-  }, [
-    authctx.authReady,
-    authctx.currentUser,
-    authctx.isLoggedIn,
-    userFinanceDetails,
-  ]);
+  if (!authContext.authReady || loading) return <LoadingScreen label="Opening secure wallet" />;
 
-  if (!authctx.authReady) {
-    return <LoadingScreen />;
-  }
+  return (
+    <div className={styles.page}>
+      <Navbar />
+      {modal === "card" && <CardAddition cancelAddition={() => setModal(null)} />}
+      {modal === "topup" && <TopUp cards={cards} cancelTopUp={() => setModal(null)} />}
 
-  if (walletLoading) {
-    return <LoadingScreen />;
-  }
+      <main className={styles.main}>
+        <header className={styles.heading}>
+          <div><span>Private cash account</span><h1>Wallet reserve</h1><p>Available liquidity and connected funding instruments for {userName}.</p></div>
+          <span className={styles.secure}><i /> Secure session</span>
+        </header>
 
-  if (userFinanceDetails) {
-    return (
-      <div className={styles.container}>
-        <Navbar />
-        {walletError ? <p>{walletError}</p> : null}
-        {cardAddition && (
-          <CardAddition cancelAddition={() => setCardAddition(false)} />
-        )}
-        {topUp && (
-          <TopUp cards={allCards} cancelTopUp={() => setTopUp(false)} />
-        )}
-        <div className={styles.wallet}>
-          <div className={styles.figures}>
-            <div className={styles.userName}>{userName}</div>
-            <div className={styles.balance}>
-              <span className={styles.balanceAmount}>$ {money.toFixed(3)}</span>
-              <button
-                type="button"
-                className={styles.balanceAction}
-                onClick={() => setTopUp(true)}
-                aria-label="Top up wallet">
-                <i className="fa-solid fa-plus"></i>
-              </button>
-            </div>
+        {error && <div className={styles.notice}>{error}</div>}
+
+        <section className={styles.balanceCard}>
+          <div className={styles.balanceTop}><span>Available to trade</span><small>USD reserve</small></div>
+          <strong>{formatCurrency(money)}</strong>
+          <div className={styles.balanceBottom}>
+            <div><span>Lifetime funded</span><b>{formatCurrency(totalFunded)}</b></div>
+            <div><span>Funding methods</span><b>{cardList.length}</b></div>
+            <button type="button" onClick={() => setModal("topup")} disabled={!cardList.length}>Add funds <span>＋</span></button>
           </div>
+          <div className={styles.balanceGlow} aria-hidden="true" />
+        </section>
+
+        <section className={styles.cardsPanel}>
+          <div className={styles.panelHeader}>
+            <div><span>Payment rails</span><h2>Connected cards</h2></div>
+            <button type="button" onClick={() => setModal("card")}>Add card <span>＋</span></button>
+          </div>
+          <div className={styles.cardHeader}><span>Issuer</span><span>Card</span><span>Cardholder</span><span>Expires</span><span>Total funded</span></div>
           <div className={styles.cards}>
-            <div className={styles.adder}>
-              <span>Debit/Credit Cards</span>
-              <button
-                type="button"
-                className={styles.cardAddButton}
-                onClick={() => setCardAddition(true)}
-                aria-label="Add card">
-                <i className="fa-solid fa-square-plus"></i>
-              </button>
-            </div>
-            <div className={styles.card}>
-              {allCards ? (
-                Object.values(allCards).map((card) => {
-                  const { type, ...otherCardData } = card;
-                  const cardImageUrl = cardImages[type] || null; // Use a default image if type is not found
-                  return (
-                    <Card
-                      key={card.introductionDate}
-                      data={{ ...otherCardData, cardImageUrl }}
-                    />
-                  );
-                })
-              ) : (
-                <p>No cards found.</p>
-              )}
-            </div>
+            {cardList.length ? cardList.map((card, index) => <Card key={card.introductionDate || index} data={{ ...card, cardImageUrl: cardImages[card.type] || "" }} />) : <div className={styles.empty}><span>◇</span><h3>No cards connected</h3><p>Add a funding method to top up your wallet reserve.</p></div>}
           </div>
-        </div>
-      </div>
-    );
-  } else {
-    return <LoadingScreen />;
-  }
+        </section>
+      </main>
+    </div>
+  );
 };
+
 export default Wallet;
-//This component is responsible for showcasing the cards and the money of the user. 

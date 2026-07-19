@@ -1,44 +1,25 @@
+import { Link } from "react-router-dom";
 import styles from "./ElementFilter.module.css";
 import CryptoChart from "./CryptoChart";
-import LazyLoad from "react-lazy-load";
-const ElementFilter = (props) => {
-  const image = props.coin.image;
-  const price = props.coin.current_price;
-  const name = props.coin.name;
-  const displacement = parseFloat(props.coin.price_change_percentage_24h);
-  const graphData = props.coin.sparkline_in_7d.price;
-  const negative =
-    props.coin.sparkline_in_7d.price[0] >
-    props.coin.sparkline_in_7d.price[
-      props.coin.sparkline_in_7d.price.length - 1
-    ];
-  return (
-    <div className={styles.container}>
-      <div className={styles.imgGraph}>
-        <LazyLoad>
-          <img src={image} alt="cyrptoImg" />
-        </LazyLoad>
+import { formatCurrency, formatPercent } from "../../utils/market";
 
-        <div className={styles.graph}>
-          <CryptoChart
-            data={graphData}
-            displacement={negative}
-            size={{
-              widthS: "800",
-              heightS: "200",
-              widthT: "100%",
-              heightT: "100%",
-            }}
-          />
+const ElementFilter = ({ coin }) => {
+  const negative = coin.price_change_percentage_24h < 0;
+  return (
+    <Link to={`/exchange/coin=${coin.id}+${coin.name}`} className={styles.container}>
+      <div className={styles.topline}>
+        <span className={styles.mark} style={{ "--coin": coin.accent }}>{coin.symbol.slice(0, 1).toUpperCase()}</span>
+        <span className={styles.symbol}>{coin.symbol.toUpperCase()}<small>{coin.name}</small></span>
+        <span className={`${styles.change} ${negative ? styles.negative : ""}`}>{formatPercent(coin.price_change_percentage_24h)}</span>
+      </div>
+      <div className={styles.bottomline}>
+        <strong>{formatCurrency(coin.current_price)}</strong>
+        <div className={styles.chart}>
+          <CryptoChart data={coin.sparkline_in_7d?.price} displacement={negative} size={{ widthS: 240, heightS: 62, heightT: 42 }} />
         </div>
       </div>
-      <div className={styles.name}>{name}</div>
-      <div className={styles.prices}>
-        <div className={styles.curr}>${price}</div>
-        <div className={styles.displacement}>{displacement}%</div>
-      </div>
-    </div>
+    </Link>
   );
 };
+
 export default ElementFilter;
-//This component is responsible for displaying the coin as a whole on the page after it has gone through the sorting logic.

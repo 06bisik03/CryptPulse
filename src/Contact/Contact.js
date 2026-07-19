@@ -1,20 +1,19 @@
-
+import { useContext, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import ContactPage from "./ContactPage";
+import AuthContext from "../Store/user-ctx";
+import LoadingScreen from "../LoadingScreen";
 
-import { useEffect, useState } from "react";
-import {  useNavigate } from "react-router";
 const Contact = () => {
+  const auth = useContext(AuthContext);
   const navigate = useNavigate();
-  const [logged, setLogged] = useState(null);
-  const localSt = localStorage.getItem("isLoggedIn");
+
   useEffect(() => {
-    if (localStorage.getItem("isLoggedIn") !== null) {
-      setLogged(<ContactPage />);
-    } else {
-      return navigate("/profile");
-    }
-  }, [localSt,navigate]);
-  return logged;
+    if (auth.authReady && !auth.isLoggedIn) navigate("/profile", { replace: true });
+  }, [auth.authReady, auth.isLoggedIn, navigate]);
+
+  if (!auth.authReady || !auth.isLoggedIn) return <LoadingScreen label="Opening secure support" />;
+  return <ContactPage />;
 };
+
 export default Contact;
-//this component is responsible for showing the contactpage if logged in and leading to the log in pannel if not

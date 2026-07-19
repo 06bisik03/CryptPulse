@@ -1,40 +1,24 @@
-import { useEffect, useState } from "react";
 import styles from "./Purchased.module.css";
 import { Link } from "react-router-dom";
 
-const Purchased = (props) => {
-  const [sell, setSell] = useState(false);
-  //check if the component is used for purchasing or selling (it is used for both to prevent creating more files and repeating code)
-  useEffect(() => {
-    if (props.sell) {
-      setSell(true);
-    }
-  }, [props.sell]);
-  
-  return (
-    <div className={styles.test}>
-      <div className={styles.container}>
-        <div className={styles.transaction}>
-          <div className={styles.icon}>
-            <i className="fa-regular fa-circle-check"></i>
-          </div>
-          <div>
-            <div className={styles.crypt}>
-              {sell
-                ? `${props.sell.sellAmount} ${props.sell.coinName}`
-                : `${props.amountOfCrypto} ${props.typeOfCrypto}`}
-            </div>
-            <div>{sell ? "Successfully sold" : "Successfully purchased!"}</div>
-            {/*The link navigates to exchange if purchase was made or only close the modal otherwise */}
-            <Link className={styles.btn} to={!sell && '/exchange'} onClick={() => sell && props.onCancel()}>
-              Continue
-            </Link>
-          </div>
-          <div></div>
-        </div>
-      </div>
+const Purchased = ({ sell, amountOfCrypto, typeOfCrypto, onCancel }) => (
+  <div className={styles.backdrop} role="dialog" aria-modal="true">
+    <div className={styles.container}>
+      <div className={styles.icon}>✓</div>
+      <span className={styles.kicker}>Order complete</span>
+      <h2>{sell ? "Position reduced" : "Asset acquired"}</h2>
+      <p>
+        {sell
+          ? `${sell.sellAmount} ${sell.coinName} was sold successfully.`
+          : `${amountOfCrypto} ${String(typeOfCrypto).toUpperCase()} has been added to your portfolio.`}
+      </p>
+      {sell ? (
+        <button type="button" onClick={onCancel}>Return to portfolio</button>
+      ) : (
+        <Link to="/profile">View portfolio <span>→</span></Link>
+      )}
     </div>
-  );
-};
+  </div>
+);
+
 export default Purchased;
-//this component is responsible for showing the modal of successful purchases or sales
